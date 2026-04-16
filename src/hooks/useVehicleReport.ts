@@ -1,58 +1,66 @@
 import { useState, useCallback } from 'react';
-import { vehicleService, VehicleBasicInfo, VehicleReport } from '@/services/api';
+import {
+  vehicleService,
+  SnapshotBaseResponse,
+  BuildSheetResponse,
+  SafetyAssessmentResponse,
+  ProvenanceResponse,
+  EVInsightsResponse,
+  LifestyleFitResponse,
+  PrePurchaseInspectionsResponse,
+  ApiResponse,
+} from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
+
+// All module data in one place
+export interface AllModuleData {
+  snapshot: ApiResponse<SnapshotBaseResponse>;
+  buildSheet: ApiResponse<BuildSheetResponse>;
+  safety: ApiResponse<SafetyAssessmentResponse>;
+  provenance: ApiResponse<ProvenanceResponse>;
+  evInsights: ApiResponse<EVInsightsResponse>;
+  lifestyleFit: ApiResponse<LifestyleFitResponse>;
+  prePurchase: ApiResponse<PrePurchaseInspectionsResponse>;
+}
 
 export interface UseVehicleReportReturn {
   // State
-  vehicleData: VehicleBasicInfo | null;
-  selectedModules: Set<string>;
+  snapshotData: SnapshotBaseResponse | null;
+  allModuleData: AllModuleData | null;
   isLoading: boolean;
-  isGeneratingReport: boolean;
-  currentReport: VehicleReport | null;
-  
+  isLoadingModules: boolean;
+  registration: string | null;
+
   // Actions
   searchVehicle: (registration: string) => Promise<void>;
-  toggleModule: (moduleId: string) => void;
-  generateReport: () => Promise<void>;
+  fetchModule: (moduleId: string, registration: string) => Promise<any>;
+  fetchAllModules: (registration: string) => Promise<void>;
   resetReport: () => void;
-  
-  // Computed values
-  totalCost: number;
 }
 
-const MODULE_PRICES: Record<string, number> = {
-  'snapshot': 0,
-  'build-sheet': 29,
-  'market-insights': 57,
-  'maintenance': 57,
-  'safety': 27,
-  'provenance': 409,
-  'salvage': 38,
-  'electric': 37,
-  'insurance': 5,
-  'lifestyle': 18,
-  'viewing': 18
-};
-
 export function useVehicleReport(): UseVehicleReportReturn {
-  const [vehicleData, setVehicleData] = useState<VehicleBasicInfo | null>(null);
-  const [selectedModules, setSelectedModules] = useState<Set<string>>(new Set(['snapshot']));
+  const [snapshotData, setSnapshotData] = useState<SnapshotBaseResponse | null>(null);
+  const [allModuleData, setAllModuleData] = useState<AllModuleData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
-  const [currentReport, setCurrentReport] = useState<VehicleReport | null>(null);
+  const [isLoadingModules, setIsLoadingModules] = useState(false);
+  const [registration, setRegistration] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const searchVehicle = useCallback(async (registration: string) => {
+  // Search vehicle — calls /snapshot-base
+  const searchVehicle = useCallback(async (reg: string) => {
+    const cleanedReg = reg.replace(/\s/g, '').toUpperCase();
     setIsLoading(true);
+
     try {
-      const response = await vehicleService.lookupVehicle(registration);
-      
+      const response = await vehicleService.getSnapshotBase(cleanedReg);
+
       if (response.success && response.data) {
-        setVehicleData(response.data);
-        setCurrentReport(null); // Reset any previous report
+        setSnapshotData(response.data);
+        setRegistration(cleanedReg);
+        setAllModuleData(null); // Reset previous module data
         toast({
           title: "Vehicle Found",
-          description: `Successfully loaded data for ${response.data.make} ${response.data.model}`,
+          description: `${response.data.vehicle_info.make} ${response.data.vehicle_info.model} (${response.data.vehicle_info.year})`,
         });
       } else {
         toast({
@@ -72,86 +80,71 @@ export function useVehicleReport(): UseVehicleReportReturn {
     }
   }, [toast]);
 
-  const toggleModule = useCallback((moduleId: string) => {
-    if (moduleId === 'snapshot') return; // Can't deselect snapshot
-    
-    setSelectedModules(prev => {
-      const newSelected = new Set(prev);
-      if (newSelected.has(moduleId)) {
-        newSelected.delete(moduleId);
-      } else {
-        newSelected.add(moduleId);
-      }
-      return newSelected;
-    });
-  }, []);
+  // Fetch a single module by ID
+  const fetchModule = useCallback(async (moduleId: string, reg: string) => {
+    const cleanedReg = reg.replace(/\s/g, '').toUpperCase();
 
-  const generateReport = useCallback(async () => {
-    if (!vehicleData) {
-      toast({
-        title: "No Vehicle Selected",
-        description: "Please search for a vehicle first",
-        variant: "destructive",
-      });
-      return;
+    const moduleMap: Record<string, (r: string) => Promise<any>> = {
+      'snapshot': vehicleService.getSnapshotBase,
+      'build-sheet': vehicleService.getBuildSheet,
+      'safety': vehicleService.getSafetyAssessment,
+      'provenance': vehicleService.getProvenance,
+      'ev-insights': vehicleService.getEVInsights,
+      'lifestyle-fit': vehicleService.getLifestyleFit,
+      'pre-purchase': vehicleService.getPrePurchaseInspections,
+    };
+
+    const fetchFn = moduleMap[moduleId];
+    if (!fetchFn) {
+      return { success: false, error: `Unknown module: ${moduleId}` };
     }
 
-    setIsGeneratingReport(true);
     try {
-      const response = await vehicleService.generateReport(
-        vehicleData.registration,
-        Array.from(selectedModules)
-      );
-      
-      if (response.success && response.data) {
-        setCurrentReport(response.data);
-        toast({
-          title: "Report Generated",
-          description: "Your vehicle report has been successfully created",
-        });
-      } else {
-        toast({
-          title: "Report Generation Failed",
-          description: response.error || "Unable to generate the report",
-          variant: "destructive",
-        });
-      }
+      return await fetchFn(cleanedReg);
+    } catch (error) {
+      return { success: false, error: 'Request failed' };
+    }
+  }, []);
+
+  // Fetch ALL modules in parallel
+  const fetchAllModules = useCallback(async (reg: string) => {
+    const cleanedReg = reg.replace(/\s/g, '').toUpperCase();
+    setIsLoadingModules(true);
+
+    try {
+      const results = await vehicleService.fetchAllModules(cleanedReg);
+      setAllModuleData(results as AllModuleData);
+
+      toast({
+        title: "All Modules Loaded",
+        description: "All available vehicle data has been fetched",
+      });
     } catch (error) {
       toast({
-        title: "Generation Error",
-        description: "An unexpected error occurred while generating the report",
+        title: "Module Fetch Error",
+        description: "Some modules failed to load",
         variant: "destructive",
       });
     } finally {
-      setIsGeneratingReport(false);
+      setIsLoadingModules(false);
     }
-  }, [vehicleData, selectedModules, toast]);
+  }, [toast]);
 
   const resetReport = useCallback(() => {
-    setVehicleData(null);
-    setSelectedModules(new Set(['snapshot']));
-    setCurrentReport(null);
+    setSnapshotData(null);
+    setAllModuleData(null);
+    setRegistration(null);
   }, []);
 
-  const totalCost = Array.from(selectedModules).reduce((sum, moduleId) => {
-    return sum + (MODULE_PRICES[moduleId] || 0);
-  }, 0);
-
   return {
-    // State
-    vehicleData,
-    selectedModules,
+    snapshotData,
+    allModuleData,
     isLoading,
-    isGeneratingReport,
-    currentReport,
-    
-    // Actions
+    isLoadingModules,
+    registration,
     searchVehicle,
-    toggleModule,
-    generateReport,
+    fetchModule,
+    fetchAllModules,
     resetReport,
-    
-    // Computed values
-    totalCost
   };
 }

@@ -1,49 +1,263 @@
 // API Service Layer
-// This file contains all the API integration points where you can add your actual API calls
+// Integrates with the Ruut vehicle intelligence API (https://api.ruut.info)
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://api.vehicleintel.com/v1';
-const API_KEY = process.env.REACT_APP_API_KEY || '';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.ruut.info';
 
 // API Configuration
 export const apiConfig = {
   baseURL: API_BASE_URL,
-  apiKey: API_KEY,
   timeout: 30000,
   retries: 3
 };
 
-// Types for API responses
-export interface VehicleBasicInfo {
-  registration: string;
+// ============================================================
+// TypeScript interfaces matching actual API response shapes
+// ============================================================
+
+// --- /snapshot-base response ---
+export interface SnapshotBaseResponse {
+  vehicle_info: {
+    registration: string;
+    make: string;
+    model: string;
+    year: number;
+    color: string;
+    mileage: number;
+  };
+  mot_history: {
+    current_status: string;
+    valid_until: string;
+    test_history: Array<{
+      date: string;
+      mileage: string;
+      result: string;
+      advisories: string[];
+    }>;
+    mileage_progression: Array<[string, number]>;
+    estimated_current_mileage: number;
+    average_annual_mileage: number;
+    ai_insights: {
+      important_patterns: Array<{
+        issue: string;
+        years_detected: string[];
+        note: string;
+      }>;
+      minor_concerns: Array<{
+        issue: string;
+        year_detected: string;
+        note: string;
+      }>;
+      recommended_actions: string[];
+    };
+  };
+  tax_status: {
+    tax_status: string;
+    annual_rate: number;
+    monthly_rate: number;
+    expires: string;
+  };
+  rarity_count: {
+    make: string;
+    model: string;
+    active: number;
+    active_percent: number;
+    inactive: number;
+    total: number;
+  };
+  recalls: {
+    number_of_recalls: number;
+    number_of_cars_affected: number;
+    recalls_data: Array<{
+      defect: string;
+      concern: string;
+      number_of_vehicles_affected: number;
+      remedy: string;
+    }>;
+  };
+  ai_analysis: {
+    market_position: {
+      summary: string;
+      strengths: string[];
+      risks: string[];
+    };
+    maintenance_insights: {
+      recurring_issues: string[];
+      one_time_issues: string[];
+      severity: string;
+    };
+    usage_assessment: {
+      mileage_pattern: string;
+      odometer_consistency: string;
+      notes: string;
+    };
+    overall_assessment: {
+      health_score: number;
+      confidence: string;
+      recommendation: string;
+    };
+  };
+}
+
+// --- /build-sheet response ---
+export interface BuildSheetResponse {
   make: string;
   model: string;
-  year: string;
-  fuel: string;
-  colour: string;
-  tax_status: string;
-  mot_expiry: string;
-  co2_emissions: number;
-  engine_size: number;
+  year: number;
+  trim: string;
+  body: string;
+  fuel_type: string;
+  specifications: {
+    engine: {
+      capacity: string;
+      description: string;
+      aspiration: string;
+      cylinders: number;
+      valve_gear: string;
+      fuel_delivery: string | null;
+      engine_family: string | null;
+      engine_description: string;
+    };
+    performance: {
+      power: { Bhp: number; Ps: number; Kw: number; Rpm: number };
+      torque: { Nm: number; LbFt: number; Rpm: number };
+      acceleration: {
+        ZeroToSixtyMph: number | null;
+        ZeroToOneHundredKph: number | null;
+        MaxSpeedKph: number;
+        MaxSpeedMph: number;
+      };
+    };
+    transmission_drive: {
+      gearbox: string;
+      gears: number;
+      type: string;
+      drivetrain: string;
+      driving_axle: string;
+    };
+    efficiency_emissions: {
+      wltp_combined_mpg: number;
+      urban_cold_mpg: number;
+      extra_urban_mpg: number;
+      combined_l100km: number;
+      co2_emissions_gkm: number;
+      euro_standard: string;
+      adblue_tank_liters: number | null;
+    };
+  };
+  equipment_grouped: Record<string, string[]>;
+  optional_extras: {
+    items: Array<{
+      feature?: string;
+      category?: string;
+      resale_impact?: string;
+      description?: string;
+    }>;
+    total_value: string | null;
+    total_items: number;
+    summary: {
+      added_to_base_price: string | null;
+      resale_premium: string | null;
+    };
+  };
+  additional_specs: {
+    boot_space: { litres: number; seats_down_litres: number | null };
+    fuel_tank: { capacity_litres: number; estimated_range_miles: number };
+    kerb_weight: { kg: number; variant: string | null };
+    towing: { braked_kg: number | null; unbraked_kg: number | null };
+  };
+  ai_insights: {
+    performance_highlights: Array<{
+      metric: string;
+      value: string;
+      assessment: string;
+    }>;
+    equipment_analysis: {
+      premium_features: Array<{
+        feature: string;
+        category: string;
+        resale_impact: string;
+        description: string;
+      }>;
+      equipment_rating: string;
+    };
+    resale_verdict: {
+      overall_rating: string;
+      key_strengths: string[];
+      resale_premium: string;
+      summary: string;
+    };
+  };
 }
 
-export interface ReportModule {
-  id: string;
-  name: string;
-  price: number;
-  data?: any;
-  status: 'pending' | 'completed' | 'failed';
+// --- /safety-assesment response ---
+export interface SafetyAssessmentResponse {
+  safety_data: any;
+  ai_analysis: any;
 }
 
-export interface VehicleReport {
-  id: string;
-  registration: string;
-  status: 'pending' | 'completed' | 'failed';
-  generated_at: string;
-  modules: ReportModule[];
-  total_cost: number;
-  download_url?: string;
+// --- /provenance response ---
+export interface ProvenanceResponse {
+  writeoff: {
+    ai_insight: string | null;
+  };
+  finance: any | null;
+  stolen_info: any | null;
+  import_export: any | null;
+  keepers: {
+    previous_keepers: number;
+    data: Array<{
+      keeper_count: number;
+      keeper_start_date: string;
+      keeper_end_date: string;
+    }>;
+    ai_insight: string;
+  };
+  plates: {
+    plate_changes: number;
+    is_original_plate: boolean;
+    data: Array<{
+      current_vrm: string;
+      previous_vrm: string;
+      transfer_type: string;
+      date_of_receipt: string;
+      date_of_transaction: string;
+    }>;
+    ai_insight: string;
+  };
 }
 
+// --- /ev-insights response ---
+export interface EVInsightsResponse {
+  ev: any | null;
+  reason?: string;
+}
+
+// --- /lifestyle-fit response ---
+export interface LifestyleFitResponse {
+  lifestyle_fit: {
+    boot_space: number;
+    turning_radius_m: number;
+    seating_capacity: number;
+    towing_capacity: {
+      braked_trailer_kg: number | null;
+      unbraked_trailer_kg: number | null;
+    };
+  };
+  subscriptions: any[];
+  ai_analysis: {
+    lifestyle: string[];
+    subscriptions: any[];
+    verdict: string;
+  };
+}
+
+// --- /pre-purchase-inspections response ---
+export interface PrePurchaseInspectionsResponse {
+  paperwork_checklist: string[];
+  model_specific_inspection: string[];
+}
+
+// Generic API response wrapper
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -51,32 +265,34 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
-// Helper function to make authenticated requests
+// ============================================================
+// Helper function to make API requests
+// ============================================================
 const makeRequest = async <T>(
   endpoint: string,
-  options: RequestInit = {}
+  params: Record<string, string> = {}
 ): Promise<ApiResponse<T>> => {
   try {
-    const url = `${API_BASE_URL}${endpoint}`;
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${API_KEY}`,
-      ...options.headers,
-    };
+    // Build query string from params
+    const queryString = new URLSearchParams(params).toString();
+    const url = `${API_BASE_URL}${endpoint}${queryString ? `?${queryString}` : ''}`;
 
     const response = await fetch(url, {
-      ...options,
-      headers,
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
+      const errorText = await response.text();
       return {
         success: false,
-        error: data.message || `HTTP ${response.status}: ${response.statusText}`,
+        error: `HTTP ${response.status}: ${response.statusText}${errorText ? ` - ${errorText}` : ''}`,
       };
     }
+
+    const data = await response.json();
 
     return {
       success: true,
@@ -90,201 +306,105 @@ const makeRequest = async <T>(
   }
 };
 
-// Vehicle lookup service
+// ============================================================
+// Vehicle Service — all 7 API endpoints
+// ============================================================
 export const vehicleService = {
-  // Look up basic vehicle information
-  async lookupVehicle(registration: string): Promise<ApiResponse<VehicleBasicInfo>> {
-    // TODO: Replace with actual API call
-    // return makeRequest<VehicleBasicInfo>(`/vehicles/${registration}`);
-    
-    // Mock implementation for demo
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          success: true,
-          data: {
-            registration,
-            make: "BMW",
-            model: "3 Series",
-            year: "2020",
-            fuel: "Diesel",
-            colour: "Black",
-            tax_status: "Taxed",
-            mot_expiry: "2024-08-15",
-            co2_emissions: 128,
-            engine_size: 1995
-          }
-        });
-      }, 1500);
-    });
+  /**
+   * 1. Snapshot Base — free, always called first
+   * GET /snapshot-base?registration=XXX
+   */
+  async getSnapshotBase(registration: string): Promise<ApiResponse<SnapshotBaseResponse>> {
+    return makeRequest<SnapshotBaseResponse>('/snapshot-base', { registration });
   },
 
-  // Generate a vehicle report with selected modules
-  async generateReport(
-    registration: string,
-    modules: string[],
-    format: 'json' | 'pdf' = 'json'
-  ): Promise<ApiResponse<VehicleReport>> {
-    // TODO: Replace with actual API call
-    /*
-    return makeRequest<VehicleReport>('/reports/generate', {
-      method: 'POST',
-      body: JSON.stringify({
-        registration,
-        modules,
-        format
-      })
-    });
-    */
-    
-    // Mock implementation for demo
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const reportModules: ReportModule[] = modules.map(moduleId => ({
-          id: moduleId,
-          name: moduleId.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()),
-          price: moduleId === 'snapshot' ? 0 : Math.floor(Math.random() * 100) + 10,
-          status: 'completed' as const
-        }));
-
-        resolve({
-          success: true,
-          data: {
-            id: `rpt_${Date.now()}`,
-            registration,
-            status: 'completed',
-            generated_at: new Date().toISOString(),
-            modules: reportModules,
-            total_cost: reportModules.reduce((sum, m) => sum + m.price, 0),
-            download_url: `${API_BASE_URL}/reports/rpt_${Date.now()}/download`
-          }
-        });
-      }, 2000);
-    });
+  /**
+   * 2. Build Sheet & Factory Options
+   * GET /build-sheet?registration=XXX
+   */
+  async getBuildSheet(registration: string): Promise<ApiResponse<BuildSheetResponse>> {
+    return makeRequest<BuildSheetResponse>('/build-sheet', { registration });
   },
 
-  // Get existing report by ID
-  async getReport(reportId: string): Promise<ApiResponse<VehicleReport>> {
-    // TODO: Replace with actual API call
-    // return makeRequest<VehicleReport>(`/reports/${reportId}`);
-    
-    // Mock implementation
-    return makeRequest<VehicleReport>(`/reports/${reportId}`);
+  /**
+   * 3. Safety & Risk Assessment
+   * GET /safety-assesment?registration=XXX&address=XXX
+   */
+  async getSafetyAssessment(registration: string, address: string): Promise<ApiResponse<SafetyAssessmentResponse>> {
+    return makeRequest<SafetyAssessmentResponse>('/safety-assesment', { registration, address });
   },
 
-  // Batch generate reports
-  async generateBatchReports(
-    registrations: string[],
-    modules: string[],
-    webhookUrl?: string
-  ): Promise<ApiResponse<{ batch_id: string; estimated_completion: string }>> {
-    // TODO: Replace with actual API call
-    /*
-    return makeRequest<{ batch_id: string; estimated_completion: string }>('/bulk/reports', {
-      method: 'POST',
-      body: JSON.stringify({
-        registrations,
-        modules,
-        webhook_url: webhookUrl
-      })
-    });
-    */
-    
-    // Mock implementation
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          success: true,
-          data: {
-            batch_id: `batch_${Date.now()}`,
-            estimated_completion: new Date(Date.now() + 600000).toISOString()
-          }
-        });
-      }, 1000);
-    });
-  }
+  /**
+   * 4. Provenance & Risk Registers
+   * GET /provenance?registration=XXX
+   */
+  async getProvenance(registration: string): Promise<ApiResponse<ProvenanceResponse>> {
+    return makeRequest<ProvenanceResponse>('/provenance', { registration });
+  },
+
+  /**
+   * 5. Electric Vehicle Insights
+   * GET /ev-insights?registration=XXX
+   */
+  async getEVInsights(registration: string): Promise<ApiResponse<EVInsightsResponse>> {
+    return makeRequest<EVInsightsResponse>('/ev-insights', { registration });
+  },
+
+  /**
+   * 6. Lifestyle Fit Tools
+   * GET /lifestyle-fit?registration=XXX
+   */
+  async getLifestyleFit(registration: string): Promise<ApiResponse<LifestyleFitResponse>> {
+    return makeRequest<LifestyleFitResponse>('/lifestyle-fit', { registration });
+  },
+
+  /**
+   * 7. Pre-Purchase Inspections (Viewing Day Checklist)
+   * GET /pre-purchase-inspections?registration=XXX
+   */
+  async getPrePurchaseInspections(registration: string): Promise<ApiResponse<PrePurchaseInspectionsResponse>> {
+    return makeRequest<PrePurchaseInspectionsResponse>('/pre-purchase-inspections', { registration });
+  },
+
+  /**
+   * Fetch ALL modules for a given registration in parallel.
+   * address is required for the safety-assessment module.
+   * Returns an object with all module data (some may have errors).
+   */
+  async fetchAllModules(registration: string, address: string) {
+    const [
+      snapshot,
+      buildSheet,
+      safety,
+      provenance,
+      evInsights,
+      lifestyleFit,
+      prePurchase,
+    ] = await Promise.allSettled([
+      this.getSnapshotBase(registration),
+      this.getBuildSheet(registration),
+      this.getSafetyAssessment(registration, address),
+      this.getProvenance(registration),
+      this.getEVInsights(registration),
+      this.getLifestyleFit(registration),
+      this.getPrePurchaseInspections(registration),
+    ]);
+
+    return {
+      snapshot: snapshot.status === 'fulfilled' ? snapshot.value : { success: false, error: 'Request failed' },
+      buildSheet: buildSheet.status === 'fulfilled' ? buildSheet.value : { success: false, error: 'Request failed' },
+      safety: safety.status === 'fulfilled' ? safety.value : { success: false, error: 'Request failed' },
+      provenance: provenance.status === 'fulfilled' ? provenance.value : { success: false, error: 'Request failed' },
+      evInsights: evInsights.status === 'fulfilled' ? evInsights.value : { success: false, error: 'Request failed' },
+      lifestyleFit: lifestyleFit.status === 'fulfilled' ? lifestyleFit.value : { success: false, error: 'Request failed' },
+      prePurchase: prePurchase.status === 'fulfilled' ? prePurchase.value : { success: false, error: 'Request failed' },
+    };
+  },
 };
 
-// Module service for getting available modules and pricing
-export const moduleService = {
-  // Get all available modules with current pricing
-  async getModules(): Promise<ApiResponse<any[]>> {
-    // TODO: Replace with actual API call
-    // return makeRequest<any[]>('/modules');
-    
-    // Mock implementation with actual module data
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          success: true,
-          data: [
-            {
-              id: "snapshot",
-              title: "Snapshot Base",
-              description: "Always included, delivered immediately after plate entry",
-              costToService: 0,
-              priceToUser: 0,
-              category: "Essential",
-              isFree: true
-            },
-            {
-              id: "build-sheet",
-              title: "Build Sheet & Factory Options",
-              description: "Exact equipment installed at factory plus optional extras",
-              costToService: 10,
-              priceToUser: 29,
-              category: "Specification",
-              isFree: false
-            },
-            {
-              id: "market-insights",
-              title: "Market Insights",
-              description: "Price behaviour and demand indicators",
-              costToService: 15,
-              priceToUser: 57,
-              category: "Market",
-              isFree: false
-            }
-          ]
-        });
-      }, 500);
-    });
-  }
-};
-
-// Payment service for handling payments
-export const paymentService = {
-  // Process payment for a report
-  async processPayment(
-    reportId: string,
-    paymentMethod: 'stripe' | 'paypal' = 'stripe'
-  ): Promise<ApiResponse<{ payment_url: string }>> {
-    // TODO: Replace with actual payment processing
-    /*
-    return makeRequest<{ payment_url: string }>('/payments/process', {
-      method: 'POST',
-      body: JSON.stringify({
-        report_id: reportId,
-        payment_method: paymentMethod
-      })
-    });
-    */
-    
-    // Mock implementation
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          success: true,
-          data: {
-            payment_url: `https://checkout.stripe.com/mock_${reportId}`
-          }
-        });
-      }, 1000);
-    });
-  }
-};
-
+// ============================================================
 // Error handling utilities
+// ============================================================
 export const handleApiError = (error: any): string => {
   if (error?.response?.data?.message) {
     return error.response.data.message;
@@ -302,7 +422,7 @@ export const retryRequest = async <T>(
   delay: number = 1000
 ): Promise<ApiResponse<T>> => {
   let lastError: any;
-  
+
   for (let i = 0; i < maxRetries; i++) {
     try {
       const result = await fn();
@@ -313,12 +433,12 @@ export const retryRequest = async <T>(
     } catch (error) {
       lastError = error;
     }
-    
+
     if (i < maxRetries - 1) {
       await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
     }
   }
-  
+
   return {
     success: false,
     error: handleApiError(lastError)

@@ -1,4 +1,3 @@
-
 import { Car, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -8,7 +7,7 @@ import { useState } from "react";
 export function Navbar() {
   const location = useLocation();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  
+
   const navItems = [
     { label: "How it Works", href: "/about" },
     { label: "Example Report", href: "/example-report" },
@@ -20,15 +19,13 @@ export function Navbar() {
     if (href.startsWith('/#')) {
       // For hash links, only consider active if we're on home page and the hash matches current scroll position
       if (location.pathname !== '/') return false;
-      
+
       // Get the hash part
-      const hash = href.substring(2); // Remove /#
-      
-      // Check if we're currently viewing that section
-      // This is a simple implementation - you might want to use Intersection Observer for better accuracy
+      const hash = href.substring(2);
+
       const element = document.getElementById(hash);
       if (!element) return false;
-      
+
       const rect = element.getBoundingClientRect();
       // Consider active if the section is in the upper half of the viewport
       return rect.top <= window.innerHeight / 2 && rect.bottom >= 0;
@@ -60,11 +57,10 @@ export function Navbar() {
                 <a
                   key={item.label}
                   href={item.href}
-                  className={`font-medium transition-colors ${
-                    location.pathname === '/' && item.label === "Features"
-                      ? 'text-primary' 
+                  className={`font-medium transition-colors ${location.pathname === '/' && item.label === "Features"
+                      ? 'text-primary'
                       : 'text-muted-foreground hover:text-foreground'
-                  }`}
+                    }`}
                 >
                   {item.label}
                 </a>
@@ -72,11 +68,10 @@ export function Navbar() {
                 <Link
                   key={item.label}
                   to={item.href}
-                  className={`font-medium transition-colors ${
-                    isActive(item.href) 
-                      ? 'text-primary' 
+                  className={`font-medium transition-colors ${isActive(item.href)
+                      ? 'text-primary'
                       : 'text-muted-foreground hover:text-foreground'
-                  }`}
+                    }`}
                 >
                   {item.label}
                 </Link>
@@ -128,7 +123,7 @@ export function Navbar() {
           </div>
         </div>
       </div>
-      
+
       {/* TODO: Add authentication modal/dialog here */}
       {showAuthModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
