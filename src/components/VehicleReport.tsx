@@ -280,7 +280,7 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
             {mot?.mileage_progression && mot.mileage_progression.length > 0 && (() => {
               const maxMil = Math.max(...mot.mileage_progression.map((m: any) => m[1] as number));
               const chartMax = maxMil > 0 ? Math.ceil(maxMil / 10000) * 10000 : 50000;
-              
+
               return (
                 <div className="mt-6 p-4 bg-muted/30 rounded-lg border">
                   <h5 className="text-sm font-semibold mb-3 flex items-center justify-between">
@@ -290,36 +290,36 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
                   <div className="relative h-48 flex items-end justify-between gap-2 sm:gap-3 border-l-2 border-b-2 border-muted-foreground/20 pl-6 sm:pl-8 pb-2 pt-4">
                     {/* Y-axis labels */}
                     <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[10px] sm:text-xs text-muted-foreground -ml-2 pb-8 items-end w-6 sm:w-8">
-                      <span>{Math.round(chartMax/1000)}k</span>
-                      <span>{Math.round(chartMax*0.8/1000)}k</span>
-                      <span>{Math.round(chartMax*0.6/1000)}k</span>
-                      <span>{Math.round(chartMax*0.4/1000)}k</span>
-                      <span>{Math.round(chartMax*0.2/1000)}k</span>
+                      <span>{Math.round(chartMax / 1000)}k</span>
+                      <span>{Math.round(chartMax * 0.8 / 1000)}k</span>
+                      <span>{Math.round(chartMax * 0.6 / 1000)}k</span>
+                      <span>{Math.round(chartMax * 0.4 / 1000)}k</span>
+                      <span>{Math.round(chartMax * 0.2 / 1000)}k</span>
                       <span>0</span>
                     </div>
-                    
+
                     {/* Bars */}
                     {mot.mileage_progression.map((point: any, idx: number) => {
                       const dateStr = point[0];
                       const year = dateStr ? new Date(dateStr).getFullYear() : 'Unknown';
                       const mileage = point[1] as number;
                       const heightPct = Math.max((mileage / chartMax) * 100, 2);
-                      
+
                       return (
                         <div key={idx} className="flex-1 flex flex-col items-center group relative">
                           <div className="absolute -top-7 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-[10px] px-2 py-1 rounded pointer-events-none whitespace-nowrap z-10">
                             {mileage.toLocaleString()} mi
                           </div>
-                          <div 
-                            className="w-full max-w-[40px] bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all group-hover:from-blue-700 group-hover:to-blue-500" 
-                            style={{height: `${heightPct}%`}}
+                          <div
+                            className="w-full max-w-[40px] bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all group-hover:from-blue-700 group-hover:to-blue-500"
+                            style={{ height: `${heightPct}%` }}
                           ></div>
                           <span className="text-[10px] sm:text-xs mt-2 font-medium truncate w-full text-center">{year}</span>
                         </div>
                       );
                     })}
                   </div>
-                  
+
                   <div className="mt-4 grid grid-cols-2 gap-4 text-xs">
                     <div className="bg-background p-2 rounded">
                       <p className="text-muted-foreground">Estimated current mileage</p>
@@ -702,7 +702,7 @@ function BuildSheetSection({ data }: { data: any }) {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
           <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-green-600" />
@@ -731,7 +731,7 @@ function BuildSheetSection({ data }: { data: any }) {
             </div>
           </div>
         </div>
-        
+
         <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
           <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
             <Calculator className="h-4 w-4 text-purple-600" />
@@ -788,7 +788,7 @@ function BuildSheetSection({ data }: { data: any }) {
             <h4 className="font-semibold text-lg">Optional Extras Fitted</h4>
             <Badge className="bg-green-100 text-green-800">Factory Options</Badge>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             {data.optional_extras.items.map((opt: any, idx: number) => (
               <div key={idx} className="bg-white rounded-lg p-4 border">
@@ -800,7 +800,7 @@ function BuildSheetSection({ data }: { data: any }) {
               </div>
             ))}
           </div>
-          
+
           {(data.optional_extras?.summary?.added_to_base_price || data.optional_extras?.summary?.resale_premium) && (
             <div className="bg-white rounded-lg p-4 border">
               <div className="flex items-center justify-between">
@@ -857,7 +857,7 @@ function BuildSheetSection({ data }: { data: any }) {
               <p className="text-sm text-purple-700">Key highlights of this vehicle's specification</p>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-white rounded-lg p-4 border border-purple-200">
               <h5 className="text-sm font-bold text-gray-900 mb-2">Performance & Efficiency</h5>
@@ -867,7 +867,7 @@ function BuildSheetSection({ data }: { data: any }) {
                 ))}
               </ul>
             </div>
-            
+
             <div className="bg-white rounded-lg p-4 border border-purple-200">
               <h5 className="text-sm font-bold text-gray-900 mb-2">Premium Equipment</h5>
               <ul className="space-y-1 text-xs text-gray-700">
@@ -877,7 +877,7 @@ function BuildSheetSection({ data }: { data: any }) {
               </ul>
             </div>
           </div>
-          
+
           <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg">
             <p className="text-sm font-semibold text-green-900 mb-1">✓ Specification Verdict</p>
             <p className="text-xs text-green-800">{data.ai_insights.resale_verdict?.summary}</p>
@@ -1050,7 +1050,7 @@ function SafetyAssessmentSection({ data }: { data: any }) {
               <p className="text-sm font-semibold text-green-900 mb-2">Overall Rating</p>
               <Badge className="bg-green-100 text-green-800">{ncap.safety_term || 'Rated'}</Badge>
             </div>
-            
+
             <div className="space-y-3">
               <div className="bg-white rounded-lg p-3 border border-green-200">
                 <div className="flex justify-between items-center mb-1">
@@ -1058,37 +1058,37 @@ function SafetyAssessmentSection({ data }: { data: any }) {
                   <span className="text-lg font-bold text-green-600">{ncap.adult_percent}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-600 h-2 rounded-full" style={{width: `${ncap.adult_percent}%`}}></div>
+                  <div className="bg-green-600 h-2 rounded-full" style={{ width: `${ncap.adult_percent}%` }}></div>
                 </div>
               </div>
-              
+
               <div className="bg-white rounded-lg p-3 border border-green-200">
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-sm font-medium">Child Occupant</span>
                   <span className="text-lg font-bold text-green-600">{ncap.child_percent}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-600 h-2 rounded-full" style={{width: `${ncap.child_percent}%`}}></div>
+                  <div className="bg-green-600 h-2 rounded-full" style={{ width: `${ncap.child_percent}%` }}></div>
                 </div>
               </div>
-              
+
               <div className="bg-white rounded-lg p-3 border border-green-200">
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-sm font-medium">Pedestrian / Vulnerable Users</span>
                   <span className="text-lg font-bold text-amber-600">{ncap.pedestrian_percent}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-amber-500 h-2 rounded-full" style={{width: `${ncap.pedestrian_percent}%`}}></div>
+                  <div className="bg-amber-500 h-2 rounded-full" style={{ width: `${ncap.pedestrian_percent}%` }}></div>
                 </div>
               </div>
-              
+
               <div className="bg-white rounded-lg p-3 border border-green-200">
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-sm font-medium">Safety Assist</span>
                   <span className="text-lg font-bold text-green-600">{ncap.safety_assist_percent}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-500 h-2 rounded-full" style={{width: `${ncap.safety_assist_percent}%`}}></div>
+                  <div className="bg-green-500 h-2 rounded-full" style={{ width: `${ncap.safety_assist_percent}%` }}></div>
                 </div>
               </div>
             </div>
@@ -1103,7 +1103,7 @@ function SafetyAssessmentSection({ data }: { data: any }) {
             <AlertTriangle className="h-5 w-5 text-amber-600" />
             Vehicle Theft & Crime Analysis
           </h4>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             {crime && (
               <div className="bg-white rounded-lg p-4 border-2 border-amber-200">
@@ -1125,7 +1125,7 @@ function SafetyAssessmentSection({ data }: { data: any }) {
                 </div>
               </div>
             )}
-            
+
             {stolen && (
               <div className="bg-white rounded-lg p-4 border-2 border-amber-200">
                 <p className="text-xs text-muted-foreground mb-2">Vehicle Theft Data</p>
@@ -1134,7 +1134,7 @@ function SafetyAssessmentSection({ data }: { data: any }) {
                 <Badge className="bg-amber-100 text-amber-800 text-xs mt-2">{stolen.frequency} Frequency</Badge>
               </div>
             )}
-            
+
             {vulns.length > 0 && (
               <div className="bg-white rounded-lg p-4 border-2 border-red-200">
                 <p className="text-xs text-muted-foreground mb-2">Primary Vulnerability</p>
@@ -1146,7 +1146,7 @@ function SafetyAssessmentSection({ data }: { data: any }) {
               </div>
             )}
           </div>
-          
+
           {(vulns.length > 1 || measures.length > 0) && (
             <div className="bg-white rounded-lg p-4 border-2 border-amber-300">
               <div className="flex items-start gap-3">
@@ -1197,7 +1197,7 @@ function SafetyAssessmentSection({ data }: { data: any }) {
               <p className="text-sm text-purple-700">Comprehensive safety and security evaluation</p>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {ai.crash_safety && (
               <div className="bg-white rounded-lg p-4 border-2 border-green-200">
@@ -1214,7 +1214,7 @@ function SafetyAssessmentSection({ data }: { data: any }) {
                 </ul>
               </div>
             )}
-            
+
             {ai.emissions_health && (
               <div className="bg-white rounded-lg p-4 border-2 border-green-200">
                 <div className="flex items-center gap-2 mb-2">
@@ -1230,7 +1230,7 @@ function SafetyAssessmentSection({ data }: { data: any }) {
                 </ul>
               </div>
             )}
-            
+
             {ai.theft_risk && (
               <div className="bg-white rounded-lg p-4 border-2 border-amber-200">
                 <div className="flex items-center gap-2 mb-2">
@@ -1247,7 +1247,7 @@ function SafetyAssessmentSection({ data }: { data: any }) {
               </div>
             )}
           </div>
-          
+
           {ai.verdict && (
             <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg">
               <div className="flex items-center gap-2 mb-2">

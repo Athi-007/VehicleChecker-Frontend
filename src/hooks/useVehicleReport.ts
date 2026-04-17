@@ -87,7 +87,7 @@ export function useVehicleReport(): UseVehicleReportReturn {
     const moduleMap: Record<string, (r: string) => Promise<any>> = {
       'snapshot': vehicleService.getSnapshotBase,
       'build-sheet': vehicleService.getBuildSheet,
-      'safety': vehicleService.getSafetyAssessment,
+      'safety': (r: string) => vehicleService.getSafetyAssessment(r, ''),
       'provenance': vehicleService.getProvenance,
       'ev-insights': vehicleService.getEVInsights,
       'lifestyle-fit': vehicleService.getLifestyleFit,
@@ -112,7 +112,7 @@ export function useVehicleReport(): UseVehicleReportReturn {
     setIsLoadingModules(true);
 
     try {
-      const results = await vehicleService.fetchAllModules(cleanedReg);
+      const results = await vehicleService.fetchAllModules(cleanedReg, '');
       setAllModuleData(results as AllModuleData);
 
       toast({
