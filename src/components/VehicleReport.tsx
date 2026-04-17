@@ -152,22 +152,22 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-card rounded-lg p-4 border">
               <h4 className="font-semibold mb-2 text-sm">Tax Status</h4>
-              <Badge className={tax.tax_status === 'Valid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                {tax.tax_status}
+              <Badge className={tax?.tax_status === 'Valid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                {tax?.tax_status || 'N/A'}
               </Badge>
-              <p className="text-xs text-muted-foreground mt-2">£{tax.annual_rate}/year • Expires {tax.expires}</p>
+              <p className="text-xs text-muted-foreground mt-2">£{tax?.annual_rate || 0}/year • Expires {tax?.expires || 'N/A'}</p>
             </div>
             <div className="bg-card rounded-lg p-4 border">
               <h4 className="font-semibold mb-2 text-sm">MOT Status</h4>
-              <Badge className={mot.current_status === 'PASSED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                {mot.current_status}
+              <Badge className={mot?.current_status === 'PASSED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                {mot?.current_status || 'N/A'}
               </Badge>
-              <p className="text-xs text-muted-foreground mt-2">Valid until {mot.valid_until}</p>
+              <p className="text-xs text-muted-foreground mt-2">Valid until {mot?.valid_until || 'N/A'}</p>
             </div>
             <div className="bg-card rounded-lg p-4 border">
               <h4 className="font-semibold mb-2 text-sm">Health Score</h4>
-              <div className="text-2xl font-bold text-primary">{ai_analysis.overall_assessment.health_score}/10</div>
-              <p className="text-xs text-muted-foreground mt-1">{ai_analysis.overall_assessment.confidence} confidence</p>
+              <div className="text-2xl font-bold text-primary">{ai_analysis?.overall_assessment?.health_score || 0}/10</div>
+              <p className="text-xs text-muted-foreground mt-1">{ai_analysis?.overall_assessment?.confidence || 'N/A'} confidence</p>
             </div>
           </div>
 
@@ -175,7 +175,7 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
           <div className="bg-card rounded-lg p-4 border">
             <h4 className="font-semibold mb-3 flex items-center gap-2">
               <Wrench className="h-4 w-4 text-primary" />
-              MOT History ({mot.test_history.length} tests)
+              MOT History ({mot?.test_history?.length || 0} tests)
             </h4>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -188,17 +188,17 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {mot.test_history.map((test, i) => (
+                  {(mot?.test_history || []).map((test, i) => (
                     <tr key={i} className="hover:bg-muted/50">
                       <td className="p-2">{test.date}</td>
-                      <td className="p-2">{Number(test.mileage).toLocaleString()} mi</td>
+                      <td className="p-2">{Number(test.mileage || 0).toLocaleString()} mi</td>
                       <td className="p-2">
                         <Badge className={`text-xs ${test.result === 'PASSED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                           {test.result}
                         </Badge>
                       </td>
                       <td className="p-2 text-xs">
-                        {test.advisories.length > 0 ? (
+                        {test.advisories && test.advisories.length > 0 ? (
                           <ul className="space-y-1">
                             {test.advisories.map((a, j) => (
                               <li key={j} className="text-amber-600">⚠ {a}</li>
@@ -216,11 +216,11 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
             <div className="mt-3 grid grid-cols-2 gap-4 text-xs">
               <div className="bg-muted/30 p-2 rounded">
                 <p className="text-muted-foreground">Est. current mileage</p>
-                <p className="font-semibold">{mot.estimated_current_mileage?.toLocaleString()} miles</p>
+                <p className="font-semibold">{mot?.estimated_current_mileage?.toLocaleString() || 0} miles</p>
               </div>
               <div className="bg-muted/30 p-2 rounded">
                 <p className="text-muted-foreground">Avg annual mileage</p>
-                <p className="font-semibold">{mot.average_annual_mileage?.toLocaleString()} mi/year</p>
+                <p className="font-semibold">{mot?.average_annual_mileage?.toLocaleString() || 0} mi/year</p>
               </div>
             </div>
           </div>
@@ -229,33 +229,33 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
           <div className="bg-card rounded-lg p-4 border">
             <h4 className="font-semibold mb-2 flex items-center gap-2">
               <Info className="h-4 w-4 text-primary" />
-              Rarity — {rarity.make} {rarity.model}
+              Rarity — {rarity?.make || ''} {rarity?.model || ''}
             </h4>
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Total registered</p>
-                <p className="font-semibold">{rarity.total.toLocaleString()}</p>
+                <p className="font-semibold">{rarity?.total?.toLocaleString() || 0}</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Active on road</p>
-                <p className="font-semibold text-green-600">{rarity.active.toLocaleString()} ({rarity.active_percent}%)</p>
+                <p className="font-semibold text-green-600">{rarity?.active?.toLocaleString() || 0} ({rarity?.active_percent || 0}%)</p>
               </div>
               <div>
                 <p className="text-muted-foreground">Off road / scrapped</p>
-                <p className="font-semibold text-red-600">{rarity.inactive.toLocaleString()}</p>
+                <p className="font-semibold text-red-600">{rarity?.inactive?.toLocaleString() || 0}</p>
               </div>
             </div>
           </div>
 
           {/* Recalls */}
-          {recalls.number_of_recalls > 0 && (
+          {recalls?.number_of_recalls > 0 && (
             <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
               <h4 className="font-semibold mb-2 flex items-center gap-2 text-amber-900">
                 <AlertTriangle className="h-4 w-4 text-amber-600" />
                 Safety Recalls ({recalls.number_of_recalls})
               </h4>
               <div className="space-y-3">
-                {recalls.recalls_data.map((recall, i) => (
+                {(recalls.recalls_data || []).map((recall, i) => (
                   <div key={i} className="bg-white rounded-lg p-3 border border-amber-200">
                     <p className="text-sm font-medium text-amber-900">{recall.concern}</p>
                     <p className="text-xs text-muted-foreground mt-1">Remedy: {recall.remedy}</p>
@@ -272,26 +272,28 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
               <TrendingUp className="h-5 w-5 text-purple-600" />
               AI Analysis
             </h4>
-            <p className="text-sm text-purple-800 mb-3">{ai_analysis.overall_assessment.recommendation}</p>
+            <p className="text-sm text-purple-800 mb-3">{ai_analysis?.overall_assessment?.recommendation || 'No recommendation available.'}</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="bg-white rounded-lg p-3 border border-purple-200">
                 <h5 className="text-xs font-bold text-green-800 mb-1">Strengths</h5>
                 <ul className="text-xs space-y-1">
-                  {ai_analysis.market_position.strengths.map((s, i) => (
+                  {(ai_analysis?.market_position?.strengths || []).map((s, i) => (
                     <li key={i} className="flex items-start gap-1"><CheckCircle className="h-3 w-3 text-green-600 mt-0.5 shrink-0" /> {s}</li>
                   ))}
+                  {(!ai_analysis?.market_position?.strengths?.length) && <li className="text-muted-foreground">None identified</li>}
                 </ul>
               </div>
               <div className="bg-white rounded-lg p-3 border border-purple-200">
                 <h5 className="text-xs font-bold text-red-800 mb-1">Risks</h5>
                 <ul className="text-xs space-y-1">
-                  {ai_analysis.market_position.risks.map((r, i) => (
+                  {(ai_analysis?.market_position?.risks || []).map((r, i) => (
                     <li key={i} className="flex items-start gap-1"><AlertTriangle className="h-3 w-3 text-red-600 mt-0.5 shrink-0" /> {r}</li>
                   ))}
+                  {(!ai_analysis?.market_position?.risks?.length) && <li className="text-muted-foreground">None identified</li>}
                 </ul>
               </div>
             </div>
-            {mot.ai_insights.recommended_actions.length > 0 && (
+            {mot?.ai_insights?.recommended_actions && mot.ai_insights.recommended_actions.length > 0 && (
               <div className="mt-3 bg-green-50 rounded-lg p-3 border border-green-200">
                 <h5 className="text-xs font-bold text-green-900 mb-1">Recommended Actions</h5>
                 <ul className="text-xs space-y-1">
