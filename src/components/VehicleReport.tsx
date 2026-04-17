@@ -45,12 +45,20 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
   const [loadingModules, setLoadingModules] = useState<Set<string>>(new Set());
   const [loadingAll, setLoadingAll] = useState(false);
 
-  // Safety module: address is required by the API
-  const [safetyAddress, setSafetyAddress] = useState("");
+  // Safety module: structured UK address fields
+  const [safetyAddr, setSafetyAddr] = useState({ line1: '', city: '', postcode: '' });
   const [showSafetyAddressInput, setShowSafetyAddressInput] = useState(false);
   // "Load All" address prompt
   const [showAllAddressInput, setShowAllAddressInput] = useState(false);
-  const [allAddress, setAllAddress] = useState("");
+  const [allAddr, setAllAddr] = useState({ line1: '', city: '', postcode: '' });
+
+  // UK postcode regex (e.g. SW1A 2AA, EC1A 1BB, M1 1AA)
+  const UK_POSTCODE_RE = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
+  const isValidPostcode = (pc: string) => UK_POSTCODE_RE.test(pc.trim());
+  const buildAddress = (a: { line1: string; city: string; postcode: string }) =>
+    `${a.line1.trim()}, ${a.city.trim()} ${a.postcode.trim()}`;
+  const isAddrComplete = (a: { line1: string; city: string; postcode: string }) =>
+    a.line1.trim().length > 0 && a.city.trim().length > 0 && isValidPostcode(a.postcode);
 
   const fetchModule = async (moduleId: string, extra?: { address?: string }) => {
     setLoadingModules(prev => new Set(prev).add(moduleId));
@@ -62,7 +70,7 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
           setModuleData(prev => ({ ...prev, buildSheet: result }));
           break;
         case 'safety': {
-          const addr = extra?.address ?? safetyAddress;
+          const addr = extra?.address ?? '';
           result = await vehicleService.getSafetyAssessment(registration, addr);
           setModuleData(prev => ({ ...prev, safety: result }));
           break;
@@ -111,7 +119,13 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
     }
   };
 
-  const { vehicle_info: info, mot_history: mot, tax_status: tax, rarity_count: rarity, recalls, ai_analysis } = snapshotData;
+  // Defensive destructure — guard against missing / differently-shaped API data
+  const info = snapshotData?.vehicle_info ?? { registration: '', make: '', model: '', year: 0, color: '', mileage: 0 };
+  const mot = snapshotData?.mot_history ?? { current_status: 'N/A', valid_until: 'N/A', test_history: [], mileage_progression: [], estimated_current_mileage: 0, average_annual_mileage: 0, ai_insights: { important_patterns: [], minor_concerns: [], recommended_actions: [] } };
+  const tax = snapshotData?.tax_status ?? { tax_status: 'N/A', annual_rate: 0, monthly_rate: 0, expires: 'N/A' };
+  const rarity = snapshotData?.rarity_count ?? { make: '', model: '', active: 0, active_percent: 0, inactive: 0, total: 0 };
+  const recalls = snapshotData?.recalls ?? { number_of_recalls: 0, number_of_cars_affected: 0, recalls_data: [] };
+  const ai_analysis = snapshotData?.ai_analysis ?? { market_position: { summary: '', strengths: [], risks: [] }, maintenance_insights: { recurring_issues: [], one_time_issues: [], severity: '' }, usage_assessment: { mileage_pattern: '', odometer_consistency: '', notes: '' }, overall_assessment: { health_score: 0, confidence: 'N/A', recommendation: '' } };
 
   return (
     <div className="space-y-6">
@@ -310,35 +324,55 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
             )}
           </Button>
         ) : (
-          <div className="inline-flex flex-col sm:flex-row items-center gap-2 bg-card border border-border rounded-xl p-4 shadow-sm max-w-xl mx-auto w-full">
-            <MapPin className="h-5 w-5 text-amber-500 shrink-0" />
+          <div className="bg-card border border-border rounded-xl p-4 shadow-sm max-w-xl mx-auto w-full space-y-3">
+            <div className="flex items-center gap-2 mb-1">
+              <MapPin className="h-5 w-5 text-amber-500 shrink-0" />
+              <span className="text-sm font-semibold">Enter UK Address for Safety Assessment</span>
+            </div>
             <Input
-              placeholder="Enter address for Safety Assessment (e.g. 10 Downing St, London)"
-              value={allAddress}
-              onChange={e => setAllAddress(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && allAddress.trim() && fetchAllModules(allAddress.trim())}
-              className="flex-1"
+              placeholder="Address Line 1 (e.g. 10 Downing St)"
+              value={allAddr.line1}
+              onChange={e => setAllAddr(prev => ({ ...prev, line1: e.target.value }))}
+              className="text-sm"
             />
-            <Button
-              onClick={() => allAddress.trim() && fetchAllModules(allAddress.trim())}
-              disabled={!allAddress.trim()}
-              size="sm"
-              className="shrink-0"
-            >
-              Load All
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowAllAddressInput(false)}
-              className="shrink-0"
-            >
-              Cancel
-            </Button>
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                placeholder="City / Town (e.g. London)"
+                value={allAddr.city}
+                onChange={e => setAllAddr(prev => ({ ...prev, city: e.target.value }))}
+                className="text-sm"
+              />
+              <Input
+                placeholder="Postcode (e.g. SW1A 2AA)"
+                value={allAddr.postcode}
+                onChange={e => setAllAddr(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }))}
+                className={`text-sm font-mono ${allAddr.postcode && !isValidPostcode(allAddr.postcode) ? 'border-red-400 focus-visible:ring-red-400' : ''}`}
+                maxLength={8}
+              />
+            </div>
+            {allAddr.postcode && !isValidPostcode(allAddr.postcode) && (
+              <p className="text-xs text-red-600">Please enter a valid UK postcode (e.g. SW1A 2AA)</p>
+            )}
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowAllAddressInput(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => isAddrComplete(allAddr) && fetchAllModules(buildAddress(allAddr))}
+                disabled={!isAddrComplete(allAddr)}
+                size="sm"
+              >
+                Load All
+              </Button>
+            </div>
           </div>
         )}
         <p className="text-xs text-muted-foreground">
-          Address is needed for the Safety &amp; Risk Assessment module • Or load individual sections below
+          A valid UK postcode is required for the Safety &amp; Risk Assessment module • Or load individual sections below
         </p>
       </div>
 
@@ -365,42 +399,56 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
       >
         {/* Address input shown before fetching */}
         {showSafetyAddressInput && !moduleData.safety && (
-          <div className="flex flex-col sm:flex-row items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
-            <MapPin className="h-4 w-4 text-amber-600 shrink-0" />
-            <span className="text-xs text-amber-800 shrink-0">Address required:</span>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-3 space-y-3">
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-amber-600 shrink-0" />
+              <span className="text-sm font-semibold text-amber-900">Enter UK Address</span>
+            </div>
             <Input
-              placeholder="e.g. 10 Downing St, London SW1A 2AA"
-              value={safetyAddress}
-              onChange={e => setSafetyAddress(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' && safetyAddress.trim()) {
-                  setShowSafetyAddressInput(false);
-                  fetchModule('safety', { address: safetyAddress.trim() });
-                }
-              }}
-              className="flex-1 text-sm"
+              placeholder="Address Line 1 (e.g. 10 Downing St)"
+              value={safetyAddr.line1}
+              onChange={e => setSafetyAddr(prev => ({ ...prev, line1: e.target.value }))}
+              className="text-sm"
             />
-            <Button
-              size="sm"
-              onClick={() => {
-                if (safetyAddress.trim()) {
-                  setShowSafetyAddressInput(false);
-                  fetchModule('safety', { address: safetyAddress.trim() });
-                }
-              }}
-              disabled={!safetyAddress.trim()}
-              className="shrink-0"
-            >
-              Confirm
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setShowSafetyAddressInput(false)}
-              className="shrink-0"
-            >
-              Cancel
-            </Button>
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                placeholder="City / Town"
+                value={safetyAddr.city}
+                onChange={e => setSafetyAddr(prev => ({ ...prev, city: e.target.value }))}
+                className="text-sm"
+              />
+              <Input
+                placeholder="Postcode (e.g. SW1A 2AA)"
+                value={safetyAddr.postcode}
+                onChange={e => setSafetyAddr(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }))}
+                className={`text-sm font-mono ${safetyAddr.postcode && !isValidPostcode(safetyAddr.postcode) ? 'border-red-400 focus-visible:ring-red-400' : ''}`}
+                maxLength={8}
+              />
+            </div>
+            {safetyAddr.postcode && !isValidPostcode(safetyAddr.postcode) && (
+              <p className="text-xs text-red-600">Please enter a valid UK postcode (e.g. SW1A 2AA)</p>
+            )}
+            <div className="flex gap-2 justify-end">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowSafetyAddressInput(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => {
+                  if (isAddrComplete(safetyAddr)) {
+                    setShowSafetyAddressInput(false);
+                    fetchModule('safety', { address: buildAddress(safetyAddr) });
+                  }
+                }}
+                disabled={!isAddrComplete(safetyAddr)}
+              >
+                Confirm
+              </Button>
+            </div>
           </div>
         )}
         {moduleData.safety?.data && <SafetyAssessmentSection data={moduleData.safety.data} />}
