@@ -171,14 +171,76 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
             </div>
           </div>
 
-          {/* MOT History */}
+          {/* Expanded MOT History Section */}
           <div className="bg-card rounded-lg p-4 border">
-            <h4 className="font-semibold mb-3 flex items-center gap-2">
-              <Wrench className="h-4 w-4 text-primary" />
-              MOT History ({mot?.test_history?.length || 0} tests)
+            <h4 className="font-semibold mb-4 flex items-center gap-2">
+              <Wrench className="h-5 w-5 text-primary" />
+              Complete MOT History & Analysis
             </h4>
+
+            {/* AI Insights Card from MOT */}
+            {(mot?.ai_insights?.important_patterns?.length > 0 || mot?.ai_insights?.minor_concerns?.length > 0 || mot?.ai_insights?.recommended_actions?.length > 0) && (
+              <div className="mb-6 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 rounded-lg p-4">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="p-2 bg-amber-500 rounded-lg shrink-0">
+                    <AlertTriangle className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h5 className="text-sm font-bold text-amber-900 mb-1">⚠️ MOT History AI Analysis</h5>
+                    <p className="text-xs text-amber-800">Insights derived from historical test data</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {/* Important Patterns */}
+                  {(mot?.ai_insights?.important_patterns || []).map((pattern: any, idx: number) => (
+                    <div key={`imp-${idx}`} className="bg-white rounded-lg p-3 border border-amber-200">
+                      <div className="flex items-start gap-2 mb-2">
+                        <Badge className="bg-amber-100 text-amber-800 text-xs">Recurring Issue</Badge>
+                      </div>
+                      <p className="text-sm font-semibold text-gray-900 mb-2">{pattern.issue}</p>
+                      <p className="text-xs text-gray-700 mb-2">Detected in: <strong>{pattern.years_detected?.join(', ')}</strong></p>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1 h-full bg-amber-400 rounded-full"></div>
+                        <p className="text-xs text-gray-600">{pattern.note}</p>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Minor Concerns */}
+                  {(mot?.ai_insights?.minor_concerns || []).map((concern: any, idx: number) => (
+                    <div key={`min-${idx}`} className="bg-white rounded-lg p-3 border border-blue-200">
+                      <div className="flex items-start gap-2 mb-2">
+                        <Badge className="bg-blue-100 text-blue-800 text-xs">Minor Concern</Badge>
+                      </div>
+                      <p className="text-sm font-semibold text-gray-900 mb-2">{concern.issue} ({concern.year_detected})</p>
+                      <div className="flex items-start gap-2">
+                        <div className="w-1 h-full bg-blue-400 rounded-full"></div>
+                        <p className="text-xs text-gray-600">{concern.note}</p>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Recommended Actions */}
+                  {mot?.ai_insights?.recommended_actions && mot.ai_insights.recommended_actions.length > 0 && (
+                    <div className="bg-green-50 rounded-lg p-3 border border-green-200 mt-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <p className="text-xs font-semibold text-green-900">Recommended Actions</p>
+                      </div>
+                      <ul className="text-xs text-green-800 space-y-1 pl-6 list-disc">
+                        {mot.ai_insights.recommended_actions.map((action: string, idx: number) => (
+                          <li key={idx}>{action}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm mt-2">
                 <thead className="bg-muted">
                   <tr>
                     <th className="text-left p-2 font-semibold">Date</th>
@@ -188,19 +250,19 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {(mot?.test_history || []).map((test, i) => (
+                  {(mot?.test_history || []).map((test: any, i: number) => (
                     <tr key={i} className="hover:bg-muted/50">
                       <td className="p-2">{test.date}</td>
                       <td className="p-2">{Number(test.mileage || 0).toLocaleString()} mi</td>
                       <td className="p-2">
                         <Badge className={`text-xs ${test.result === 'PASSED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                          {test.result}
+                          {test.result === 'PASSED' ? 'Pass' : 'Fail'}
                         </Badge>
                       </td>
                       <td className="p-2 text-xs">
                         {test.advisories && test.advisories.length > 0 ? (
                           <ul className="space-y-1">
-                            {test.advisories.map((a, j) => (
+                            {test.advisories.map((a: string, j: number) => (
                               <li key={j} className="text-amber-600">⚠ {a}</li>
                             ))}
                           </ul>
@@ -213,16 +275,64 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
                 </tbody>
               </table>
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-4 text-xs">
-              <div className="bg-muted/30 p-2 rounded">
-                <p className="text-muted-foreground">Est. current mileage</p>
-                <p className="font-semibold">{mot?.estimated_current_mileage?.toLocaleString() || 0} miles</p>
-              </div>
-              <div className="bg-muted/30 p-2 rounded">
-                <p className="text-muted-foreground">Avg annual mileage</p>
-                <p className="font-semibold">{mot?.average_annual_mileage?.toLocaleString() || 0} mi/year</p>
-              </div>
-            </div>
+
+            {/* Mileage chart replacement logic */}
+            {mot?.mileage_progression && mot.mileage_progression.length > 0 && (() => {
+              const maxMil = Math.max(...mot.mileage_progression.map((m: any) => m[1] as number));
+              const chartMax = maxMil > 0 ? Math.ceil(maxMil / 10000) * 10000 : 50000;
+              
+              return (
+                <div className="mt-6 p-4 bg-muted/30 rounded-lg border">
+                  <h5 className="text-sm font-semibold mb-3 flex items-center justify-between">
+                    <span>Mileage Progression Chart</span>
+                    <span className="text-xs text-muted-foreground">Annual average: {mot.average_annual_mileage?.toLocaleString() || 0} mi/yr</span>
+                  </h5>
+                  <div className="relative h-48 flex items-end justify-between gap-2 sm:gap-3 border-l-2 border-b-2 border-muted-foreground/20 pl-6 sm:pl-8 pb-2 pt-4">
+                    {/* Y-axis labels */}
+                    <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[10px] sm:text-xs text-muted-foreground -ml-2 pb-8 items-end w-6 sm:w-8">
+                      <span>{Math.round(chartMax/1000)}k</span>
+                      <span>{Math.round(chartMax*0.8/1000)}k</span>
+                      <span>{Math.round(chartMax*0.6/1000)}k</span>
+                      <span>{Math.round(chartMax*0.4/1000)}k</span>
+                      <span>{Math.round(chartMax*0.2/1000)}k</span>
+                      <span>0</span>
+                    </div>
+                    
+                    {/* Bars */}
+                    {mot.mileage_progression.map((point: any, idx: number) => {
+                      const dateStr = point[0];
+                      const year = dateStr ? new Date(dateStr).getFullYear() : 'Unknown';
+                      const mileage = point[1] as number;
+                      const heightPct = Math.max((mileage / chartMax) * 100, 2);
+                      
+                      return (
+                        <div key={idx} className="flex-1 flex flex-col items-center group relative">
+                          <div className="absolute -top-7 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-[10px] px-2 py-1 rounded pointer-events-none whitespace-nowrap z-10">
+                            {mileage.toLocaleString()} mi
+                          </div>
+                          <div 
+                            className="w-full max-w-[40px] bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all group-hover:from-blue-700 group-hover:to-blue-500" 
+                            style={{height: `${heightPct}%`}}
+                          ></div>
+                          <span className="text-[10px] sm:text-xs mt-2 font-medium truncate w-full text-center">{year}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  <div className="mt-4 grid grid-cols-2 gap-4 text-xs">
+                    <div className="bg-background p-2 rounded">
+                      <p className="text-muted-foreground">Estimated current mileage</p>
+                      <p className="font-semibold text-sm sm:text-base">~{mot.estimated_current_mileage?.toLocaleString() || 0} miles</p>
+                    </div>
+                    <div className="bg-background p-2 rounded">
+                      <p className="text-muted-foreground">Average historical annual mileage</p>
+                      <p className="font-semibold text-sm sm:text-base">~{mot.average_annual_mileage?.toLocaleString() || 0} mi/yr</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Rarity */}
@@ -293,16 +403,6 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
                 </ul>
               </div>
             </div>
-            {mot?.ai_insights?.recommended_actions && mot.ai_insights.recommended_actions.length > 0 && (
-              <div className="mt-3 bg-green-50 rounded-lg p-3 border border-green-200">
-                <h5 className="text-xs font-bold text-green-900 mb-1">Recommended Actions</h5>
-                <ul className="text-xs space-y-1">
-                  {mot.ai_insights.recommended_actions.map((a, i) => (
-                    <li key={i}>• {a}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
