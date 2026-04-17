@@ -629,10 +629,15 @@ function ModuleCard({
             {icon}
             {title}
           </CardTitle>
-          {!isLoaded && !isLoading && (
+          {!isLoaded && !isLoading && !error && (
             <Button variant="outline" size="sm" onClick={onLoad}>
               Load Data
             </Button>
+          )}
+          {error && !isLoading && (
+             <Button variant="outline" size="sm" onClick={onLoad} className="text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700">
+               Load Again
+             </Button>
           )}
           {isLoading && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
