@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Car, Shield, FileText, AlertTriangle, CheckCircle, Info,
-  Battery, Eye, Heart, Wrench, TrendingUp, Users, Key, Loader2, MapPin
+  Battery, Eye, Heart, Wrench, TrendingUp, Users, Key, Loader2, MapPin, Calculator
 } from "lucide-react";
 import {
   vehicleService,
@@ -669,66 +669,109 @@ function ModuleCard({
 // ============================================================
 // Build Sheet Section
 // ============================================================
-function BuildSheetSection({ data }: { data: BuildSheetResponse }) {
+function BuildSheetSection({ data }: { data: any }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Powertrain Specifications */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h5 className="text-sm font-semibold mb-2">Engine</h5>
-          <div className="space-y-1 text-xs">
-            <div className="flex justify-between"><span className="text-muted-foreground">Capacity</span><span className="font-medium">{data.specifications.engine.capacity}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Type</span><span className="font-medium">{data.specifications.engine.aspiration}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Power</span><span className="font-medium">{data.specifications.performance.power.Bhp} BHP</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Torque</span><span className="font-medium">{data.specifications.performance.torque.Nm} Nm</span></div>
+        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-4">
+          <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+            <Car className="h-4 w-4 text-blue-600" />
+            Engine & Performance
+          </h4>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Engine</span>
+              <span className="font-medium">{data.specifications?.engine?.capacity || 'N/A'} {data.specifications?.engine?.aspiration || ''}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Power</span>
+              <span className="font-medium">{data.specifications?.performance?.power?.Ps || data.specifications?.performance?.power?.Bhp || 'N/A'} PS</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Torque</span>
+              <span className="font-medium">{data.specifications?.performance?.torque?.Nm || 'N/A'} Nm</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">0-62mph</span>
+              <span className="font-medium">{data.specifications?.performance?.acceleration?.ZeroToOneHundredKph ? `${data.specifications.performance.acceleration.ZeroToOneHundredKph}s` : 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Top Speed</span>
+              <span className="font-medium">{data.specifications?.performance?.acceleration?.MaxSpeedMph ? `${data.specifications.performance.acceleration.MaxSpeedMph} mph` : 'N/A'}</span>
+            </div>
           </div>
         </div>
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <h5 className="text-sm font-semibold mb-2">Transmission</h5>
-          <div className="space-y-1 text-xs">
-            <div className="flex justify-between"><span className="text-muted-foreground">Gearbox</span><span className="font-medium">{data.specifications.transmission_drive.gearbox}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Gears</span><span className="font-medium">{data.specifications.transmission_drive.gears}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Drivetrain</span><span className="font-medium">{data.specifications.transmission_drive.drivetrain}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Drive Axle</span><span className="font-medium">{data.specifications.transmission_drive.driving_axle}</span></div>
+        
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
+          <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-green-600" />
+            Transmission & Drive
+          </h4>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Gearbox</span>
+              <span className="font-medium">{data.specifications?.transmission_drive?.gearbox || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Gears</span>
+              <span className="font-medium">{data.specifications?.transmission_drive?.gears || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Type</span>
+              <span className="font-medium">{data.specifications?.transmission_drive?.type || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Drivetrain</span>
+              <span className="font-medium">{data.specifications?.transmission_drive?.drivetrain || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Drive Axle</span>
+              <span className="font-medium">{data.specifications?.transmission_drive?.driving_axle || 'N/A'}</span>
+            </div>
           </div>
         </div>
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-          <h5 className="text-sm font-semibold mb-2">Efficiency</h5>
-          <div className="space-y-1 text-xs">
-            <div className="flex justify-between"><span className="text-muted-foreground">Combined MPG</span><span className="font-medium">{data.specifications.efficiency_emissions.wltp_combined_mpg}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">CO₂</span><span className="font-medium">{data.specifications.efficiency_emissions.co2_emissions_gkm} g/km</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Euro Standard</span><span className="font-medium">{data.specifications.efficiency_emissions.euro_standard}</span></div>
+        
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
+          <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+            <Calculator className="h-4 w-4 text-purple-600" />
+            Efficiency & Emissions
+          </h4>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Combined MPG</span>
+              <span className="font-medium">{data.specifications?.efficiency_emissions?.wltp_combined_mpg ? `${data.specifications.efficiency_emissions.wltp_combined_mpg} mpg` : 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Extra Urban</span>
+              <span className="font-medium">{data.specifications?.efficiency_emissions?.extra_urban_mpg ? `${data.specifications.efficiency_emissions.extra_urban_mpg} mpg` : 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">CO₂ Emissions</span>
+              <span className="font-medium">{data.specifications?.efficiency_emissions?.co2_emissions_gkm ? `${data.specifications.efficiency_emissions.co2_emissions_gkm} g/km` : 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Euro Standard</span>
+              <span className="font-medium">{data.specifications?.efficiency_emissions?.euro_standard ? `Euro ${data.specifications.efficiency_emissions.euro_standard}` : 'N/A'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">AdBlue Tank</span>
+              <span className="font-medium">{data.specifications?.efficiency_emissions?.adblue_tank_liters ? `${data.specifications.efficiency_emissions.adblue_tank_liters}L` : 'N/A'}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-card rounded-lg p-3 border text-center">
-          <p className="text-xs text-muted-foreground">Boot Space</p>
-          <p className="text-lg font-bold">{data.additional_specs.boot_space.litres}L</p>
-        </div>
-        <div className="bg-card rounded-lg p-3 border text-center">
-          <p className="text-xs text-muted-foreground">Fuel Tank</p>
-          <p className="text-lg font-bold">{data.additional_specs.fuel_tank.capacity_litres}L</p>
-        </div>
-        <div className="bg-card rounded-lg p-3 border text-center">
-          <p className="text-xs text-muted-foreground">Kerb Weight</p>
-          <p className="text-lg font-bold">{data.additional_specs.kerb_weight.kg}kg</p>
-        </div>
-        <div className="bg-card rounded-lg p-3 border text-center">
-          <p className="text-xs text-muted-foreground">Est. Range</p>
-          <p className="text-lg font-bold">{data.additional_specs.fuel_tank.estimated_range_miles} mi</p>
-        </div>
-      </div>
-
+      {/* Standard Equipment by Category */}
       {data.equipment_grouped && Object.keys(data.equipment_grouped).length > 0 && (
-        <div className="bg-card rounded-lg p-4 border">
-          <h5 className="text-sm font-semibold mb-3">Standard Equipment</h5>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Object.entries(data.equipment_grouped).map(([category, items]) => (
+        <div className="bg-card rounded-lg p-6 border">
+          <h4 className="font-semibold text-lg mb-4">Standard Equipment</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Object.entries(data.equipment_grouped).map(([category, items]: [string, any]) => (
               <div key={category}>
-                <h6 className="text-xs font-semibold text-primary mb-1">{category}</h6>
-                <ul className="space-y-0.5 text-xs text-muted-foreground">
-                  {items.map((item, i) => (
+                <h5 className="text-sm font-semibold text-primary mb-2">{category}</h5>
+                <ul className="space-y-1 text-xs text-muted-foreground">
+                  {items.map((item: string, i: number) => (
                     <li key={i}>• {item}</li>
                   ))}
                 </ul>
@@ -738,15 +781,112 @@ function BuildSheetSection({ data }: { data: BuildSheetResponse }) {
         </div>
       )}
 
+      {/* Optional Extras */}
+      {data.optional_extras?.items?.length > 0 && (
+        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="font-semibold text-lg">Optional Extras Fitted</h4>
+            <Badge className="bg-green-100 text-green-800">Factory Options</Badge>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {data.optional_extras.items.map((opt: any, idx: number) => (
+              <div key={idx} className="bg-white rounded-lg p-4 border">
+                <div className="flex items-start justify-between mb-2">
+                  <h5 className="text-sm font-semibold">{opt.name}</h5>
+                  {opt.price && <Badge variant="outline" className="text-xs">£{opt.price}</Badge>}
+                </div>
+                {opt.description && <p className="text-xs text-muted-foreground">{opt.description}</p>}
+              </div>
+            ))}
+          </div>
+          
+          {(data.optional_extras?.summary?.added_to_base_price || data.optional_extras?.summary?.resale_premium) && (
+            <div className="bg-white rounded-lg p-4 border">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold">Total Optional Equipment Value</p>
+                  <p className="text-xs text-muted-foreground">Added to base vehicle price when new</p>
+                </div>
+                <p className="text-2xl font-bold text-primary">{data.optional_extras.summary.added_to_base_price || 'Varies'}</p>
+              </div>
+              {data.optional_extras.summary.resale_premium && (
+                <p className="text-xs text-green-600 mt-2">{data.optional_extras.summary.resale_premium} vs base specification</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Dimensions & Capacities */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-card rounded-lg p-4 border text-center">
+          <p className="text-xs text-muted-foreground mb-1">Boot Space</p>
+          <p className="text-2xl font-bold">{data.additional_specs?.boot_space?.litres || 'N/A'}L</p>
+          {data.additional_specs?.boot_space?.seats_down_litres && (
+            <p className="text-xs text-muted-foreground">{data.additional_specs.boot_space.seats_down_litres}L seats down</p>
+          )}
+        </div>
+        <div className="bg-card rounded-lg p-4 border text-center">
+          <p className="text-xs text-muted-foreground mb-1">Fuel Tank</p>
+          <p className="text-2xl font-bold">{data.additional_specs?.fuel_tank?.capacity_litres || 'N/A'}L</p>
+          {data.additional_specs?.fuel_tank?.estimated_range_miles && (
+            <p className="text-xs text-muted-foreground">~{data.additional_specs.fuel_tank.estimated_range_miles} mile range</p>
+          )}
+        </div>
+        <div className="bg-card rounded-lg p-4 border text-center">
+          <p className="text-xs text-muted-foreground mb-1">Kerb Weight</p>
+          <p className="text-2xl font-bold">{data.additional_specs?.kerb_weight?.kg || 'N/A'}kg</p>
+        </div>
+        <div className="bg-card rounded-lg p-4 border text-center">
+          <p className="text-xs text-muted-foreground mb-1">Towing</p>
+          <p className="text-2xl font-bold">{data.additional_specs?.towing?.braked_kg || '0'}kg</p>
+          <p className="text-xs text-muted-foreground">Braked trailer</p>
+        </div>
+      </div>
+
+      {/* Consolidated AI Analysis */}
       {data.ai_insights && (
-        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-300 rounded-lg p-4">
-          <h5 className="text-sm font-bold text-purple-900 mb-2">AI Specification Verdict</h5>
-          <p className="text-xs text-purple-800">{data.ai_insights.resale_verdict.summary}</p>
-          <div className="mt-2 flex gap-2">
-            <Badge className="bg-purple-100 text-purple-800 text-xs">Rating: {data.ai_insights.resale_verdict.overall_rating}</Badge>
-            {data.ai_insights.resale_verdict.resale_premium && (
-              <Badge className="bg-green-100 text-green-800 text-xs">Resale: {data.ai_insights.resale_verdict.resale_premium}</Badge>
-            )}
+        <div className="bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 border-2 border-purple-300 rounded-lg p-6">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="p-3 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg">
+              <Car className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h4 className="text-lg font-bold text-purple-900">AI Analysis: Specification & Equipment</h4>
+              <p className="text-sm text-purple-700">Key highlights of this vehicle's specification</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white rounded-lg p-4 border border-purple-200">
+              <h5 className="text-sm font-bold text-gray-900 mb-2">Performance & Efficiency</h5>
+              <ul className="space-y-1 text-xs text-gray-700">
+                {(data.ai_insights.performance_highlights || []).map((ph: any, i: number) => (
+                  <li key={i}>• <strong>{ph.metric}:</strong> {ph.assessment}</li>
+                ))}
+              </ul>
+            </div>
+            
+            <div className="bg-white rounded-lg p-4 border border-purple-200">
+              <h5 className="text-sm font-bold text-gray-900 mb-2">Premium Equipment</h5>
+              <ul className="space-y-1 text-xs text-gray-700">
+                {(data.ai_insights.equipment_analysis?.premium_features || []).map((pf: any, i: number) => (
+                  <li key={i}>• <strong>{pf.feature}</strong>: {pf.description}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          
+          <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg">
+            <p className="text-sm font-semibold text-green-900 mb-1">✓ Specification Verdict</p>
+            <p className="text-xs text-green-800">{data.ai_insights.resale_verdict?.summary}</p>
+            <div className="mt-2 flex gap-2">
+              <Badge className="bg-green-100 text-green-800 text-xs border-none">Rating: {data.ai_insights.resale_verdict?.overall_rating || 'N/A'}</Badge>
+              {data.ai_insights.resale_verdict?.resale_premium && (
+                <Badge className="bg-green-100 text-green-800 text-xs border-none">Premium: {data.ai_insights.resale_verdict.resale_premium}</Badge>
+              )}
+            </div>
           </div>
         </div>
       )}
