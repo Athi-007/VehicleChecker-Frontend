@@ -1,7 +1,7 @@
 // API Service Layer
 // Integrates with the Ruut vehicle intelligence API (https://api.ruut.info)
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.ruut.info';
+const API_BASE_URL = '/api';
 
 // API Configuration
 export const apiConfig = {
@@ -14,7 +14,6 @@ export const apiConfig = {
 // TypeScript interfaces matching actual API response shapes
 // ============================================================
 
-// --- /snapshot-base response ---
 export interface SnapshotBaseResponse {
   vehicle_info: {
     registration: string;
@@ -195,12 +194,28 @@ export interface SafetyAssessmentResponse {
   ai_analysis: any;
 }
 
+// --- Finance agreement shape ---
+export interface FinanceAgreement {
+  agreement_date: string;
+  agreement_type: string;
+  agreement_term: number;
+  agreement_number: string;
+  finance_company: string;
+  vehicle_description: string;
+}
+
+export interface FinanceData {
+  number_of_agreements: number;
+  agreements: FinanceAgreement[];
+  ai_insight: string;
+}
+
 // --- /provenance response ---
 export interface ProvenanceResponse {
   writeoff: {
     ai_insight: string | null;
   };
-  finance: any | null;
+  finance: FinanceData | null;
   stolen_info: any | null;
   import_export: any | null;
   keepers: {
@@ -406,13 +421,26 @@ export const vehicleService = {
 // Error handling utilities
 // ============================================================
 export const handleApiError = (error: any): string => {
+  // Axios-style response errors
   if (error?.response?.data?.message) {
-    return error.response.data.message;
+    return `Server error: ${error.response.data.message}`;
   }
+  if (error?.response?.status) {
+    const status = error.response.status;
+    if (status === 404) return 'Vehicle not found — please check the registration.';
+    if (status === 401 || status === 403) return 'Unauthorised — your API key may be invalid or missing.';
+    if (status === 429) return 'Too many requests — please wait a moment and try again.';
+    if (status >= 500) return `Server error (${status}) — the data provider is currently unavailable.`;
+    return `Request failed with status ${status}.`;
+  }
+  // Native fetch / network errors
   if (error?.message) {
+    if (error.message.toLowerCase().includes('failed to fetch') || error.message.toLowerCase().includes('networkerror')) {
+      return 'Network error — please check your internet connection and try again.';
+    }
     return error.message;
   }
-  return 'An unexpected error occurred';
+  return 'An unexpected error occurred. Please try again.';
 };
 
 // Retry mechanism for failed requests

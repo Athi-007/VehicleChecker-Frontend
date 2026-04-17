@@ -497,9 +497,14 @@ function ModuleCard({
       </CardHeader>
       <CardContent>
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
-            <AlertTriangle className="h-4 w-4 inline mr-1" />
-            {error}
+          <div className="bg-red-50 border border-red-300 rounded-lg p-4 mb-3">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-red-800">Failed to load data</p>
+                <p className="text-xs text-red-700 mt-0.5">{error}</p>
+              </div>
+            </div>
           </div>
         )}
         {!isLoaded && !isLoading && !error && (
@@ -613,12 +618,59 @@ function ProvenanceSection({ data }: { data: ProvenanceResponse }) {
         <p className="text-xs mt-1">{data.writeoff?.ai_insight || 'No write-off history found ✓'}</p>
       </div>
 
-      <div className={`rounded-lg p-4 border ${data.finance ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+      <div className={`rounded-lg p-4 border ${data.finance ? 'bg-red-50 border-red-300' : 'bg-green-50 border-green-200'}`}>
         <h5 className="text-sm font-semibold flex items-center gap-2">
-          {data.finance ? <AlertTriangle className="h-4 w-4 text-red-600" /> : <CheckCircle className="h-4 w-4 text-green-600" />}
+          {data.finance
+            ? <AlertTriangle className="h-4 w-4 text-red-600" />
+            : <CheckCircle className="h-4 w-4 text-green-600" />}
           Outstanding Finance
+          {data.finance && (
+            <span className="ml-auto text-xs font-bold bg-red-600 text-white px-2 py-0.5 rounded-full">
+              {data.finance.number_of_agreements} Agreement{data.finance.number_of_agreements !== 1 ? 's' : ''}
+            </span>
+          )}
         </h5>
-        <p className="text-xs mt-1">{data.finance ? JSON.stringify(data.finance) : 'No outstanding finance found ✓'}</p>
+
+        {data.finance ? (
+          <div className="mt-3 space-y-3">
+            {data.finance.agreements.map((ag, i) => (
+              <div key={i} className="bg-white border border-red-200 rounded-lg p-3 space-y-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge className="bg-red-100 text-red-800 text-xs font-bold">{ag.agreement_type}</Badge>
+                  <span className="text-xs text-muted-foreground">{ag.vehicle_description}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                  <div>
+                    <span className="text-muted-foreground">Finance Company</span>
+                    <p className="font-semibold text-red-900">{ag.finance_company}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Agreement Date</span>
+                    <p className="font-semibold">
+                      {new Date(ag.agreement_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Term</span>
+                    <p className="font-semibold">{ag.agreement_term} months</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Agreement Ref</span>
+                    <p className="font-semibold italic text-gray-500">{ag.agreement_number}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* AI Warning */}
+            <div className="bg-gradient-to-r from-red-100 to-orange-50 border border-red-300 rounded-lg p-3 flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
+              <p className="text-xs font-medium text-red-800 leading-relaxed">{data.finance.ai_insight}</p>
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs mt-1 text-green-700">No outstanding finance found ✓</p>
+        )}
       </div>
 
       <div className={`rounded-lg p-4 border ${data.stolen_info ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
