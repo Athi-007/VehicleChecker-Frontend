@@ -7,13 +7,8 @@ import { Footer } from "@/components/Footer";
 import { SnapshotBaseResponse } from "@/services/api";
 
 const Index = () => {
-  const [registration, setRegistration] = useState<string | null>(() => {
-    return sessionStorage.getItem("ruut_registration");
-  });
-  const [snapshotData, setSnapshotData] = useState<SnapshotBaseResponse | null>(() => {
-    const saved = sessionStorage.getItem("ruut_snapshotData");
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [registration, setRegistration] = useState<string | null>(null);
+  const [snapshotData, setSnapshotData] = useState<SnapshotBaseResponse | null>(null);
 
   const handleVehicleSearch = (reg: string, data: SnapshotBaseResponse) => {
     setRegistration(reg);

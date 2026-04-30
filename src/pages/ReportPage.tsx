@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 // ─────────────────────────────────────────────────────────────────────────────
 // Report-specific Navbar
 // ─────────────────────────────────────────────────────────────────────────────
-function ReportNavbar({ registration, onCheckAnother }: { registration: string, onCheckAnother: () => void }) {
+function ReportNavbar({ registration }: { registration: string }) {
   const navigate = useNavigate();
 
   return (
@@ -38,7 +38,7 @@ function ReportNavbar({ registration, onCheckAnother }: { registration: string, 
               <span>Full Report</span>
             </div>
             <Button
-              onClick={onCheckAnother}
+              onClick={() => navigate("/")}
               variant="outline"
               className="flex items-center gap-2 border-primary/40 hover:bg-primary/5 hover:border-primary transition-all"
             >
@@ -63,7 +63,7 @@ function ReportNavbar({ registration, onCheckAnother }: { registration: string, 
                     <FileText className="h-5 w-5" />
                     Full Report
                   </div>
-                  <Button onClick={onCheckAnother} variant="outline" className="w-full flex items-center gap-2">
+                  <Button onClick={() => navigate("/")} variant="outline" className="w-full flex items-center gap-2">
                     <Search className="h-4 w-4" />
                     Check Another Vehicle
                   </Button>
@@ -102,14 +102,6 @@ export default function ReportPage() {
   const selectedModules: string[] = state.selectedModules ?? [];
   const postcode: string = state.postcode ?? "";
 
-  const handleCheckAnother = () => {
-    sessionStorage.removeItem("ruut_registration");
-    sessionStorage.removeItem("ruut_snapshotData");
-    sessionStorage.removeItem("ruut_selectedModules");
-    sessionStorage.removeItem("ruut_postcode");
-    navigate("/");
-  };
-
   useEffect(() => {
     if (!registration) { navigate("/"); return; }
     if (snapshotData) return;
@@ -133,7 +125,7 @@ export default function ReportPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <ReportNavbar registration={reg} onCheckAnother={handleCheckAnother} />
+      <ReportNavbar registration={reg} />
 
       <main className="container mx-auto px-4 py-10 max-w-5xl">
         {loading && (
@@ -146,7 +138,7 @@ export default function ReportPage() {
         {error && !loading && (
           <div className="flex flex-col items-center gap-6 py-24 text-center">
             <p className="text-destructive text-lg font-semibold">{error}</p>
-            <Button onClick={handleCheckAnother} className="flex items-center gap-2">
+            <Button onClick={() => navigate("/")} className="flex items-center gap-2">
               <Search className="h-4 w-4" />
               Search Another Vehicle
             </Button>
