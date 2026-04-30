@@ -23,7 +23,7 @@ const ExampleReport = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <div className="pt-24 pb-10">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
@@ -33,7 +33,7 @@ const ExampleReport = () => {
                 <ArrowLeft className="h-4 w-4" />
                 Back to Home
               </Link>
-              
+
               <div className="bg-gradient-to-br from-primary/10 via-background to-primary/5 rounded-lg p-8 mb-8">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="p-3 bg-primary/10 rounded-lg">
@@ -44,7 +44,7 @@ const ExampleReport = () => {
                     <p className="text-muted-foreground">Sample report for {sampleData.registration}</p>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                   <div className="bg-card rounded-lg p-4">
                     <p className="text-sm text-muted-foreground">Vehicle</p>
@@ -96,7 +96,7 @@ const ExampleReport = () => {
                     </div>
                     <p className="text-sm text-red-700">Category S write-off detected</p>
                   </div>
-                  
+
                   <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold text-green-900">Finance Check</span>
@@ -104,7 +104,7 @@ const ExampleReport = () => {
                     </div>
                     <p className="text-sm text-green-700">No outstanding finance</p>
                   </div>
-                  
+
                   <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold text-green-900">MOT History</span>
@@ -112,7 +112,7 @@ const ExampleReport = () => {
                     </div>
                     <p className="text-sm text-green-700">Clean pass record</p>
                   </div>
-                  
+
                   <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold text-amber-900">Mileage</span>
@@ -120,7 +120,7 @@ const ExampleReport = () => {
                     </div>
                     <p className="text-sm text-amber-700">Above average for age</p>
                   </div>
-                  
+
                   <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-semibold text-green-900">Keeper Count</span>
@@ -167,7 +167,7 @@ const ExampleReport = () => {
                       <p className="text-sm text-muted-foreground">Expires: 31 March 2025</p>
                     </div>
                   </div>
-                  
+
                   <div className="bg-card rounded-lg p-4 border">
                     <h4 className="font-semibold mb-3 flex items-center gap-2">
                       <Shield className="h-4 w-4 text-primary" />
@@ -182,7 +182,7 @@ const ExampleReport = () => {
                       <p className="text-sm text-muted-foreground">Historical recalls: 0</p>
                     </div>
                   </div>
-                  
+
                   <div className="bg-card rounded-lg p-4 border">
                     <h4 className="font-semibold mb-3 flex items-center gap-2">
                       <Info className="h-4 w-4 text-primary" />
@@ -204,20 +204,20 @@ const ExampleReport = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Expanded MOT History Section */}
                 <div className="bg-card rounded-lg p-4 border">
                   <h4 className="font-semibold mb-4 flex items-center gap-2">
                     <Wrench className="h-5 w-5 text-primary" />
                     Complete MOT History & Analysis
                   </h4>
-                  
+
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium">Current Status</span>
                       <Badge variant="secondary" className="bg-green-100 text-green-800">Valid until 24 August 2025</Badge>
                     </div>
-                    
+
                     {/* AI Analysis Card */}
                     <div className="mt-3 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 rounded-lg p-4">
                       <div className="flex items-start gap-3 mb-3">
@@ -229,7 +229,7 @@ const ExampleReport = () => {
                           <p className="text-xs text-amber-800">Repeated advisory requires attention</p>
                         </div>
                       </div>
-                      
+
                       <div className="space-y-3">
                         <div className="bg-white rounded-lg p-3 border border-amber-200">
                           <div className="flex items-start gap-2 mb-2">
@@ -245,7 +245,7 @@ const ExampleReport = () => {
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="bg-white rounded-lg p-3 border border-blue-200">
                           <div className="flex items-start gap-2 mb-2">
                             <Badge className="bg-blue-100 text-blue-800 text-xs">Minor Concern</Badge>
@@ -259,7 +259,7 @@ const ExampleReport = () => {
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="bg-green-50 rounded-lg p-3 border border-green-200">
                           <div className="flex items-center gap-2 mb-1">
                             <CheckCircle className="h-4 w-4 text-green-600" />
@@ -270,7 +270,7 @@ const ExampleReport = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* MOT Tests Table */}
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -349,7 +349,7 @@ const ExampleReport = () => {
                       </tbody>
                     </table>
                   </div>
-                  
+
                   {/* Mileage Chart - Enhanced */}
                   <div className="mt-6 p-4 bg-muted/30 rounded-lg border">
                     <h5 className="text-sm font-semibold mb-3 flex items-center justify-between">
@@ -366,35 +366,35 @@ const ExampleReport = () => {
                         <span>10k</span>
                         <span>0</span>
                       </div>
-                      
+
                       {/* Bars */}
                       <div className="flex-1 flex flex-col items-center">
-                        <div className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:from-blue-700 hover:to-blue-500" style={{height: '26%'}}></div>
+                        <div className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:from-blue-700 hover:to-blue-500" style={{ height: '26%' }}></div>
                         <span className="text-xs mt-2 font-medium">Aug 2020</span>
                         <span className="text-xs text-muted-foreground">12,567</span>
                       </div>
                       <div className="flex-1 flex flex-col items-center">
-                        <div className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:from-blue-700 hover:to-blue-500" style={{height: '46%'}}></div>
+                        <div className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:from-blue-700 hover:to-blue-500" style={{ height: '46%' }}></div>
                         <span className="text-xs mt-2 font-medium">Aug 2021</span>
                         <span className="text-xs text-muted-foreground">21,223</span>
                       </div>
                       <div className="flex-1 flex flex-col items-center">
-                        <div className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:from-blue-700 hover:to-blue-500" style={{height: '64%'}}></div>
+                        <div className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:from-blue-700 hover:to-blue-500" style={{ height: '64%' }}></div>
                         <span className="text-xs mt-2 font-medium">Aug 2022</span>
                         <span className="text-xs text-muted-foreground">29,445</span>
                       </div>
                       <div className="flex-1 flex flex-col items-center">
-                        <div className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:from-blue-700 hover:to-blue-500" style={{height: '83%'}}></div>
+                        <div className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:from-blue-700 hover:to-blue-500" style={{ height: '83%' }}></div>
                         <span className="text-xs mt-2 font-medium">Aug 2023</span>
                         <span className="text-xs text-muted-foreground">37,891</span>
                       </div>
                       <div className="flex-1 flex flex-col items-center">
-                        <div className="w-full bg-gradient-to-t from-green-600 to-green-400 rounded-t transition-all hover:from-green-700 hover:to-green-500" style={{height: '98%'}}></div>
+                        <div className="w-full bg-gradient-to-t from-green-600 to-green-400 rounded-t transition-all hover:from-green-700 hover:to-green-500" style={{ height: '98%' }}></div>
                         <span className="text-xs mt-2 font-medium">Aug 2024</span>
                         <span className="text-xs text-muted-foreground font-semibold">45,234</span>
                       </div>
                     </div>
-                    
+
                     <div className="mt-4 grid grid-cols-2 gap-4 text-xs">
                       <div className="bg-background p-2 rounded">
                         <p className="text-muted-foreground">Estimated current mileage</p>
@@ -405,7 +405,7 @@ const ExampleReport = () => {
                         <p className="font-semibold text-base">~9,050 miles/yr</p>
                       </div>
                     </div>
-                    
+
                   </div>
                 </div>
 
@@ -420,7 +420,7 @@ const ExampleReport = () => {
                       <p className="text-sm text-purple-700">Key insights on vehicle status and market position</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-white rounded-lg p-4 border border-purple-200">
                       <h5 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
@@ -433,7 +433,7 @@ const ExampleReport = () => {
                         <li>• Strong resale outlook as diesel supply tightens</li>
                       </ul>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-4 border border-purple-200">
                       <h5 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
                         <Wrench className="h-4 w-4 text-amber-600" />
@@ -446,7 +446,7 @@ const ExampleReport = () => {
                       </ul>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg">
                     <p className="text-sm font-semibold text-green-900 mb-1">✓ Overall Assessment</p>
                     <p className="text-xs text-green-800">Healthy usage pattern with verifiable mileage and clean legal status. Recurring brake advisory is typical and manageable. Strong market position with excellent resale potential.</p>
@@ -497,7 +497,7 @@ const ExampleReport = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
                     <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
                       <TrendingUp className="h-4 w-4 text-green-600" />
@@ -526,7 +526,7 @@ const ExampleReport = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
                     <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
                       <Calculator className="h-4 w-4 text-purple-600" />
@@ -572,7 +572,7 @@ const ExampleReport = () => {
                         <li>• Roof Rails (Satin Aluminum)</li>
                       </ul>
                     </div>
-                    
+
                     <div>
                       <h5 className="text-sm font-semibold text-primary mb-2">Interior & Comfort</h5>
                       <ul className="space-y-1 text-xs text-muted-foreground">
@@ -584,7 +584,7 @@ const ExampleReport = () => {
                         <li>• Split-Folding Rear Seats (40:20:40)</li>
                       </ul>
                     </div>
-                    
+
                     <div>
                       <h5 className="text-sm font-semibold text-primary mb-2">Technology & Safety</h5>
                       <ul className="space-y-1 text-xs text-muted-foreground">
@@ -605,7 +605,7 @@ const ExampleReport = () => {
                     <h4 className="font-semibold text-lg">Optional Extras Fitted</h4>
                     <Badge className="bg-green-100 text-green-800">High Specification</Badge>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div className="bg-white rounded-lg p-4 border">
                       <div className="flex items-start justify-between mb-2">
@@ -614,7 +614,7 @@ const ExampleReport = () => {
                       </div>
                       <p className="text-xs text-muted-foreground mb-2">Electric tilt/slide with anti-trap, wind deflector, and sun blinds</p>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-4 border">
                       <div className="flex items-start justify-between mb-2">
                         <h5 className="text-sm font-semibold">Harman Kardon Surround Audio</h5>
@@ -622,7 +622,7 @@ const ExampleReport = () => {
                       </div>
                       <p className="text-xs text-muted-foreground mb-2">16 speakers, 464W amplifier, vehicle-specific tuning</p>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-4 border">
                       <div className="flex items-start justify-between mb-2">
                         <h5 className="text-sm font-semibold">Adaptive LED Headlights</h5>
@@ -630,7 +630,7 @@ const ExampleReport = () => {
                       </div>
                       <p className="text-xs text-muted-foreground mb-2">Variable light distribution, cornering function, auto high-beam</p>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-4 border">
                       <div className="flex items-start justify-between mb-2">
                         <h5 className="text-sm font-semibold">Comfort Access</h5>
@@ -639,7 +639,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-muted-foreground mb-2">Keyless entry, electric tailgate with foot sensor</p>
                     </div>
                   </div>
-                  
+
                   <div className="bg-white rounded-lg p-4 border">
                     <div className="flex items-center justify-between">
                       <div>
@@ -687,7 +687,7 @@ const ExampleReport = () => {
                       <p className="text-sm text-purple-700">Key highlights of this vehicle's specification</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-white rounded-lg p-4 border border-purple-200">
                       <h5 className="text-sm font-bold text-gray-900 mb-2">Performance & Efficiency</h5>
@@ -697,7 +697,7 @@ const ExampleReport = () => {
                         <li>• xDrive AWD for all-weather capability</li>
                       </ul>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-4 border border-purple-200">
                       <h5 className="text-sm font-bold text-gray-900 mb-2">Premium Equipment</h5>
                       <ul className="space-y-1 text-xs text-gray-700">
@@ -707,7 +707,7 @@ const ExampleReport = () => {
                       </ul>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg">
                     <p className="text-sm font-semibold text-green-900 mb-1">✓ Specification Verdict</p>
                     <p className="text-xs text-green-800">Exceptionally well-specified X3 with optimal powertrain and highly desirable options. M Sport package and premium equipment will command strong resale values.</p>
@@ -834,7 +834,7 @@ const ExampleReport = () => {
                         <div className="flex items-center"><span className="w-12">£28k</span><div className="flex-1 border-t border-dashed border-muted-foreground/20"></div></div>
                         <div className="flex items-center"><span className="w-12">£27k</span><div className="flex-1 border-t border-dashed border-muted-foreground/20"></div></div>
                       </div>
-                      
+
                       {/* Line chart - showing gradual depreciation */}
                       <div className="absolute inset-0 pl-12 pr-4 pb-6 flex items-end">
                         <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -850,13 +850,13 @@ const ExampleReport = () => {
                           />
                           <defs>
                             <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3"/>
-                              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05"/>
+                              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
+                              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
                             </linearGradient>
                           </defs>
                         </svg>
                       </div>
-                      
+
                       {/* X-axis labels */}
                       <div className="absolute bottom-0 left-12 right-4 flex justify-between text-xs text-muted-foreground">
                         <span>Dec '23</span>
@@ -866,7 +866,7 @@ const ExampleReport = () => {
                         <span>Dec '24</span>
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-3 gap-4 mt-4">
                       <div className="text-center">
                         <p className="text-xs text-muted-foreground">1-Month Change</p>
@@ -892,7 +892,7 @@ const ExampleReport = () => {
                       </h4>
                       <div className="flex items-center gap-2 mb-3">
                         <div className="flex-1 bg-green-200 rounded-full h-4">
-                          <div className="bg-green-600 h-4 rounded-full flex items-center justify-end pr-2" style={{width: '78%'}}>
+                          <div className="bg-green-600 h-4 rounded-full flex items-center justify-end pr-2" style={{ width: '78%' }}>
                             <span className="text-xs text-white font-bold">78%</span>
                           </div>
                         </div>
@@ -920,7 +920,7 @@ const ExampleReport = () => {
                         <p className="text-xs text-gray-700">High viewing numbers indicate strong liquidity - easy resale when needed</p>
                       </div>
                     </div>
-                    
+
                     {/* Color Desirability */}
                     <div className="bg-card rounded-lg p-4 border">
                       <h4 className="font-semibold text-sm mb-3">Colour Desirability</h4>
@@ -948,7 +948,7 @@ const ExampleReport = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Demand Indicators */}
                     <div className="bg-card rounded-lg p-4 border">
                       <h4 className="font-semibold text-sm mb-3">Demand Indicators</h4>
@@ -959,7 +959,7 @@ const ExampleReport = () => {
                             <span className="text-xs font-semibold">High</span>
                           </div>
                           <div className="w-full bg-muted rounded-full h-2">
-                            <div className="bg-green-600 h-2 rounded-full" style={{width: '85%'}}></div>
+                            <div className="bg-green-600 h-2 rounded-full" style={{ width: '85%' }}></div>
                           </div>
                         </div>
                         <div>
@@ -968,7 +968,7 @@ const ExampleReport = () => {
                             <span className="text-xs font-semibold text-green-600">Favorable</span>
                           </div>
                           <div className="w-full bg-muted rounded-full h-2">
-                            <div className="bg-blue-600 h-2 rounded-full" style={{width: '72%'}}></div>
+                            <div className="bg-blue-600 h-2 rounded-full" style={{ width: '72%' }}></div>
                           </div>
                         </div>
                         <div>
@@ -977,7 +977,7 @@ const ExampleReport = () => {
                             <span className="text-xs font-semibold">Strong</span>
                           </div>
                           <div className="w-full bg-muted rounded-full h-2">
-                            <div className="bg-primary h-2 rounded-full" style={{width: '88%'}}></div>
+                            <div className="bg-primary h-2 rounded-full" style={{ width: '88%' }}></div>
                           </div>
                         </div>
                       </div>
@@ -1069,7 +1069,7 @@ const ExampleReport = () => {
                         </tbody>
                       </table>
                     </div>
-                    
+
                     {/* AI Service Analysis */}
                     <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-4 mt-4">
                       <div className="flex items-start gap-3 mb-3">
@@ -1081,7 +1081,7 @@ const ExampleReport = () => {
                           <p className="text-xs text-blue-700">Based on 45k mileage & 9k mi/yr usage</p>
                         </div>
                       </div>
-                      
+
                       <div className="bg-white rounded-lg p-3 border border-green-200">
                         <div className="flex items-center gap-2 mb-1">
                           <CheckCircle className="h-4 w-4 text-green-600" />
@@ -1090,7 +1090,7 @@ const ExampleReport = () => {
                         <p className="text-lg font-bold text-green-600">£400-500</p>
                         <p className="text-xs text-gray-600 mt-1">Independent specialist estimate</p>
                       </div>
-                      
+
                       <div className="mt-3 space-y-2">
                         <div className="flex items-start gap-2">
                           <Badge className="bg-green-100 text-green-800 text-xs">Savings</Badge>
@@ -1114,45 +1114,45 @@ const ExampleReport = () => {
                           <span className="font-semibold text-sm">£320-£480</span>
                         </div>
                         <p className="text-xs text-muted-foreground">Typically last 40,000-50,000 miles. Consider inspection given advisory history.</p>
-                        
+
                         <div className="flex justify-between items-center border-b pb-2 mt-3">
                           <span className="text-sm">Rear Brake Pads & Discs</span>
                           <span className="font-semibold text-sm">£280-£420</span>
                         </div>
                         <p className="text-xs text-muted-foreground">Last longer than fronts - typically 60,000-70,000 miles.</p>
-                        
+
                         <div className="flex justify-between items-center border-b pb-2 mt-3">
                           <span className="text-sm">Set of 4 Tyres (Premium)</span>
                           <span className="font-semibold text-sm">£650-£850</span>
                         </div>
                         <p className="text-xs text-muted-foreground">Size: 245/45 R20. Premium brands recommended for xDrive system.</p>
-                        
+
                         <div className="flex justify-between items-center border-b pb-2 mt-3">
                           <span className="text-sm">Battery Replacement</span>
                           <span className="font-semibold text-sm">£220-£280</span>
                         </div>
                         <p className="text-xs text-muted-foreground">AGM battery typically lasts 5-7 years. Coding required after replacement.</p>
                       </div>
-                      
+
                       <div className="space-y-3">
                         <div className="flex justify-between items-center border-b pb-2">
                           <span className="text-sm">AdBlue Top-Up</span>
                           <span className="font-semibold text-sm">£15-£25</span>
                         </div>
                         <p className="text-xs text-muted-foreground">Required every 6,000-8,000 miles. Essential for diesel emissions.</p>
-                        
+
                         <div className="flex justify-between items-center border-b pb-2 mt-3">
                           <span className="text-sm">DPF Cleaning/Regeneration</span>
                           <span className="font-semibold text-sm">£150-£300</span>
                         </div>
                         <p className="text-xs text-muted-foreground">Rarely needed if driven regularly on longer journeys.</p>
-                        
+
                         <div className="flex justify-between items-center border-b pb-2 mt-3">
                           <span className="text-sm">Wiper Blades (Pair)</span>
                           <span className="font-semibold text-sm">£35-£55</span>
                         </div>
                         <p className="text-xs text-muted-foreground">Replace annually for optimal visibility.</p>
-                        
+
                         <div className="flex justify-between items-center border-b pb-2 mt-3">
                           <span className="text-sm">Air Conditioning Service</span>
                           <span className="font-semibold text-sm">£95-£140</span>
@@ -1160,7 +1160,7 @@ const ExampleReport = () => {
                         <p className="text-xs text-muted-foreground">Recommended every 2 years to maintain efficiency.</p>
                       </div>
                     </div>
-                    
+
                     {/* AI Urgent Items Alert */}
                     <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-400 rounded-lg p-4 mt-4">
                       <div className="flex items-start gap-3 mb-3">
@@ -1172,7 +1172,7 @@ const ExampleReport = () => {
                           <p className="text-xs text-amber-700">Based on MOT advisory history</p>
                         </div>
                       </div>
-                      
+
                       <div className="space-y-3">
                         <div className="bg-white rounded-lg p-3 border-2 border-amber-300">
                           <div className="flex items-center gap-2 mb-2">
@@ -1181,7 +1181,7 @@ const ExampleReport = () => {
                           </div>
                           <p className="text-xs text-gray-700">Discs and pads flagged in multiple MOTs - assess remaining life</p>
                         </div>
-                        
+
                         <div className="bg-white rounded-lg p-3 border border-amber-200">
                           <div className="flex items-center gap-2 mb-2">
                             <Badge className="bg-amber-100 text-amber-800 text-xs">Soon</Badge>
@@ -1189,7 +1189,7 @@ const ExampleReport = () => {
                           </div>
                           <p className="text-xs text-gray-700">Tread approaching minimum (3.2mm) - need replacing within 3,000-5,000 miles</p>
                         </div>
-                        
+
                         <div className="bg-green-50 rounded-lg p-3 border border-green-200">
                           <div className="flex items-center gap-2">
                             <Calculator className="h-4 w-4 text-green-600" />
@@ -1234,7 +1234,7 @@ const ExampleReport = () => {
                       </div>
                       <p className="text-xs text-muted-foreground mt-3">vs £4,380 class average</p>
                     </div>
-                    
+
                     <div className="bg-card rounded-lg p-4 border">
                       <h4 className="font-semibold text-sm mb-3">Reliability Score</h4>
                       <div className="flex items-center justify-center mb-4">
@@ -1254,7 +1254,7 @@ const ExampleReport = () => {
                         <p className="text-xs text-muted-foreground mt-2">Based on 5,400+ MOT records</p>
                       </div>
                     </div>
-                    
+
                     <div className="bg-card rounded-lg p-4 border">
                       <h4 className="font-semibold text-sm mb-3">3-Year Ownership Cost</h4>
                       <p className="text-3xl font-bold text-primary mb-2">£11,520</p>
@@ -1282,7 +1282,7 @@ const ExampleReport = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                 </div>
               </CardContent>
             </Card>
@@ -1314,7 +1314,7 @@ const ExampleReport = () => {
                       <p className="text-sm font-semibold text-green-900 mb-2">Overall Rating</p>
                       <Badge className="bg-green-100 text-green-800">Excellent Safety</Badge>
                     </div>
-                    
+
                     <div className="space-y-3">
                       <div className="bg-white rounded-lg p-3 border border-green-200">
                         <div className="flex justify-between items-center mb-1">
@@ -1322,37 +1322,37 @@ const ExampleReport = () => {
                           <span className="text-lg font-bold text-green-600">93%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-green-600 h-2 rounded-full" style={{width: '93%'}}></div>
+                          <div className="bg-green-600 h-2 rounded-full" style={{ width: '93%' }}></div>
                         </div>
                       </div>
-                      
+
                       <div className="bg-white rounded-lg p-3 border border-green-200">
                         <div className="flex justify-between items-center mb-1">
                           <span className="text-sm font-medium">Child Occupant</span>
                           <span className="text-lg font-bold text-green-600">88%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-green-600 h-2 rounded-full" style={{width: '88%'}}></div>
+                          <div className="bg-green-600 h-2 rounded-full" style={{ width: '88%' }}></div>
                         </div>
                       </div>
-                      
+
                       <div className="bg-white rounded-lg p-3 border border-green-200">
                         <div className="flex justify-between items-center mb-1">
                           <span className="text-sm font-medium">Vulnerable Road Users</span>
                           <span className="text-lg font-bold text-amber-600">81%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-amber-500 h-2 rounded-full" style={{width: '81%'}}></div>
+                          <div className="bg-amber-500 h-2 rounded-full" style={{ width: '81%' }}></div>
                         </div>
                       </div>
-                      
+
                       <div className="bg-white rounded-lg p-3 border border-green-200">
                         <div className="flex justify-between items-center mb-1">
                           <span className="text-sm font-medium">Safety Assist</span>
                           <span className="text-lg font-bold text-green-600">85%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-green-500 h-2 rounded-full" style={{width: '85%'}}></div>
+                          <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }}></div>
                         </div>
                       </div>
                     </div>
@@ -1369,19 +1369,19 @@ const ExampleReport = () => {
                     <div>
                       <div className="h-32 bg-gradient-to-t from-green-100 to-transparent rounded-lg p-4 flex items-end justify-between gap-2">
                         <div className="flex flex-col items-center gap-1 flex-1">
-                          <div className="bg-green-500 rounded-t" style={{width: '100%', height: '70px'}}></div>
+                          <div className="bg-green-500 rounded-t" style={{ width: '100%', height: '70px' }}></div>
                           <span className="text-xs text-muted-foreground">2022</span>
                         </div>
                         <div className="flex flex-col items-center gap-1 flex-1">
-                          <div className="bg-green-500 rounded-t" style={{width: '100%', height: '75px'}}></div>
+                          <div className="bg-green-500 rounded-t" style={{ width: '100%', height: '75px' }}></div>
                           <span className="text-xs text-muted-foreground">2023</span>
                         </div>
                         <div className="flex flex-col items-center gap-1 flex-1">
-                          <div className="bg-green-400 rounded-t" style={{width: '100%', height: '80px'}}></div>
+                          <div className="bg-green-400 rounded-t" style={{ width: '100%', height: '80px' }}></div>
                           <span className="text-xs text-muted-foreground">2024</span>
                         </div>
                         <div className="flex flex-col items-center gap-1 flex-1">
-                          <div className="bg-green-400 rounded-t" style={{width: '100%', height: '75px'}}></div>
+                          <div className="bg-green-400 rounded-t" style={{ width: '100%', height: '75px' }}></div>
                           <span className="text-xs text-muted-foreground">Current</span>
                         </div>
                       </div>
@@ -1390,7 +1390,7 @@ const ExampleReport = () => {
                         <p className="text-sm font-medium text-green-700">Stable - within normal range</p>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-3">
                       <div className="bg-green-50 rounded-lg p-3 border border-green-200">
                         <div className="flex items-center gap-2 mb-2">
@@ -1399,7 +1399,7 @@ const ExampleReport = () => {
                         </div>
                         <p className="text-xs text-gray-700">No signs of diesel particulate filter blockage</p>
                       </div>
-                      
+
                       <div className="bg-green-50 rounded-lg p-3 border border-green-200">
                         <div className="flex items-center gap-2 mb-2">
                           <CheckCircle className="h-4 w-4 text-green-600" />
@@ -1407,7 +1407,7 @@ const ExampleReport = () => {
                         </div>
                         <p className="text-xs text-gray-700">Emissions recirculation working correctly</p>
                       </div>
-                      
+
                       <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
                         <p className="text-xs font-semibold text-blue-900 mb-1">Likely Usage Pattern</p>
                         <p className="text-xs text-gray-700">Regular motorway driving helps keep DPF clear</p>
@@ -1422,7 +1422,7 @@ const ExampleReport = () => {
                     <AlertTriangle className="h-5 w-5 text-amber-600" />
                     Vehicle Theft & Crime Analysis
                   </h4>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div className="bg-white rounded-lg p-4 border-2 border-amber-200">
                       <p className="text-xs text-muted-foreground mb-2">Local Area Risk</p>
@@ -1438,14 +1438,14 @@ const ExampleReport = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-4 border-2 border-amber-200">
                       <p className="text-xs text-muted-foreground mb-2">BMW X3 Theft Data</p>
                       <p className="text-2xl font-bold text-amber-600 mb-2">47</p>
                       <p className="text-xs text-gray-700">UK thefts in 2024</p>
                       <Badge className="bg-amber-100 text-amber-800 text-xs mt-2">Moderate Frequency</Badge>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-4 border-2 border-red-200">
                       <p className="text-xs text-muted-foreground mb-2">Primary Vulnerability</p>
                       <div className="flex items-center gap-2 mb-2">
@@ -1455,7 +1455,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-gray-700">Relay attack susceptibility</p>
                     </div>
                   </div>
-                  
+
                   <div className="bg-white rounded-lg p-4 border-2 border-amber-300">
                     <div className="flex items-start gap-3">
                       <Shield className="h-5 w-5 text-amber-600 shrink-0 mt-1" />
@@ -1495,7 +1495,7 @@ const ExampleReport = () => {
                       <p className="text-sm text-purple-700">Comprehensive safety and security evaluation</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-white rounded-lg p-4 border-2 border-green-200">
                       <div className="flex items-center gap-2 mb-2">
@@ -1508,7 +1508,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-gray-700 mb-2">• Excellent adult (93%) & child (88%) protection</p>
                       <p className="text-xs text-gray-700">• Lacks latest pedestrian detection vs 2023+ models</p>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-4 border-2 border-green-200">
                       <div className="flex items-center gap-2 mb-2">
                         <div className="p-2 bg-green-100 rounded-lg">
@@ -1520,7 +1520,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-gray-700 mb-2">• No signs of diesel system issues</p>
                       <p className="text-xs text-gray-700">• Likely regular motorway use pattern</p>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-4 border-2 border-amber-200">
                       <div className="flex items-center gap-2 mb-2">
                         <div className="p-2 bg-amber-100 rounded-lg">
@@ -1533,7 +1533,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-gray-700">• Budget £200-400 for security upgrades</p>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <CheckCircle className="h-5 w-5 text-green-600" />
@@ -1566,7 +1566,7 @@ const ExampleReport = () => {
                       </div>
                       <p className="text-xs text-green-600">No Category Marker</p>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-3 border">
                       <div className="flex items-center justify-between mb-1">
                         <h4 className="font-semibold text-sm">Outstanding Finance</h4>
@@ -1574,7 +1574,7 @@ const ExampleReport = () => {
                       </div>
                       <p className="text-xs text-green-600">No Active Agreements</p>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-3 border">
                       <div className="flex items-center justify-between mb-1">
                         <h4 className="font-semibold text-sm">Stolen Vehicle Marker</h4>
@@ -1583,14 +1583,14 @@ const ExampleReport = () => {
                       <p className="text-xs text-green-600">Not Reported Stolen</p>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <div className="bg-white rounded-lg p-3 border">
                       <h4 className="font-semibold text-sm mb-1">Previous Plates & Keepers</h4>
                       <p className="text-xs text-muted-foreground">Plates: 1 (Original)</p>
                       <p className="text-xs text-muted-foreground">Keepers: 2 Previous</p>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-3 border">
                       <div className="flex items-center justify-between mb-1">
                         <h4 className="font-semibold text-sm">Export/Import History</h4>
@@ -1613,7 +1613,7 @@ const ExampleReport = () => {
                       <p className="text-sm text-purple-700">Complete legal and ownership history assessment</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-white rounded-lg p-4 border-2 border-green-200">
                       <div className="flex items-center gap-2 mb-2">
@@ -1624,7 +1624,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-gray-700">• No outstanding finance</p>
                       <p className="text-xs text-gray-700">• Not reported stolen</p>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
                       <div className="flex items-center gap-2 mb-2">
                         <Car className="h-5 w-5 text-blue-600" />
@@ -1634,7 +1634,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-gray-700">• Original registration plate</p>
                       <p className="text-xs text-gray-700">• Suggests careful ownership</p>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-4 border-2 border-green-200">
                       <div className="flex items-center gap-2 mb-2">
                         <Shield className="h-5 w-5 text-green-600" />
@@ -1645,7 +1645,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-gray-700">• No spec discrepancies</p>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <CheckCircle className="h-5 w-5 text-green-600" />
@@ -1677,7 +1677,7 @@ const ExampleReport = () => {
                       <p className="text-sm font-medium text-green-800">No Auction Record Found</p>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <h4 className="font-semibold text-sm">Recalls Check</h4>
                     <div className="bg-green-100 border-2 border-green-300 rounded p-4 text-center">
@@ -1699,7 +1699,7 @@ const ExampleReport = () => {
                       <p className="text-sm text-purple-700">Structural damage and safety recall assessment</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-white rounded-lg p-4 border-2 border-green-200">
                       <div className="flex items-center gap-2 mb-2">
@@ -1710,7 +1710,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-gray-700">• No structural damage detected</p>
                       <p className="text-xs text-gray-700">• Clean damage history</p>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-4 border-2 border-green-200">
                       <div className="flex items-center gap-2 mb-2">
                         <Shield className="h-5 w-5 text-green-600" />
@@ -1721,7 +1721,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-gray-700">• All safety items current</p>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <CheckCircle className="h-5 w-5 text-green-600" />
@@ -1774,7 +1774,7 @@ const ExampleReport = () => {
                     </div>
                     <p className="text-xs text-muted-foreground">Mid-range premium group</p>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <h4 className="font-semibold text-sm">First Year Premium Range</h4>
                     <div className="flex items-baseline gap-2 mb-2">
@@ -1797,7 +1797,7 @@ const ExampleReport = () => {
                       <p className="text-sm text-purple-700">Group rating and premium estimates</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
                       <h5 className="text-sm font-bold text-gray-900 mb-2">Group 29E Analysis</h5>
@@ -1805,7 +1805,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-gray-700">• 190hp output impacts rating</p>
                       <p className="text-xs text-gray-700">• Mid-range for premium SUV segment</p>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
                       <h5 className="text-sm font-bold text-gray-900 mb-2">Premium Factors</h5>
                       <p className="text-xs text-gray-700">• £680 with full NCB & 35+ age</p>
@@ -1813,7 +1813,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-gray-700">• Theft risk impacts premiums</p>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <Info className="h-5 w-5 text-blue-600" />
@@ -1845,7 +1845,7 @@ const ExampleReport = () => {
                         <span className="text-xs">Boot Space</span>
                         <div className="flex items-center gap-2">
                           <div className="w-20 bg-green-200 rounded-full h-2">
-                            <div className="bg-green-600 h-2 rounded-full" style={{width: '90%'}}></div>
+                            <div className="bg-green-600 h-2 rounded-full" style={{ width: '90%' }}></div>
                           </div>
                           <span className="text-xs font-medium">Excellent</span>
                         </div>
@@ -1860,7 +1860,7 @@ const ExampleReport = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <h4 className="font-semibold text-sm">Infotainment Subscriptions</h4>
                     <div className="space-y-2">
@@ -1885,7 +1885,7 @@ const ExampleReport = () => {
                       <p className="text-sm text-purple-700">How this vehicle fits your daily needs</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-white rounded-lg p-4 border-2 border-green-200">
                       <div className="flex items-center gap-2 mb-2">
@@ -1896,7 +1896,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-gray-700">• 2,000kg towing for caravans</p>
                       <p className="text-xs text-gray-700">• 5 seats with spacious rear</p>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-4 border-2 border-amber-200">
                       <div className="flex items-center gap-2 mb-2">
                         <AlertTriangle className="h-5 w-5 text-amber-600" />
@@ -1907,7 +1907,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-gray-700">• Consider in ownership costs</p>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <CheckCircle className="h-5 w-5 text-green-600" />
@@ -1943,7 +1943,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-amber-600">⚠️ Inspect front suspension bushes</p>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <h4 className="font-semibold text-sm">Paperwork Checklist</h4>
                     <div className="space-y-1">
@@ -1967,7 +1967,7 @@ const ExampleReport = () => {
                       <p className="text-sm text-purple-700">Critical inspection points from 2,500+ X3 MOT records</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-white rounded-lg p-4 border-2 border-amber-200">
                       <div className="flex items-center gap-2 mb-2">
@@ -1978,7 +1978,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-gray-700">• Sunroof drains (leak risk)</p>
                       <p className="text-xs text-gray-700">• Front suspension bushes</p>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
                       <div className="flex items-center gap-2 mb-2">
                         <Wrench className="h-5 w-5 text-blue-600" />
@@ -1988,7 +1988,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-gray-700">• DPF regeneration cycle</p>
                       <p className="text-xs text-gray-700">• iDrive system function</p>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg p-4 border-2 border-green-200">
                       <div className="flex items-center gap-2 mb-2">
                         <FileText className="h-5 w-5 text-green-600" />
@@ -1999,7 +1999,7 @@ const ExampleReport = () => {
                       <p className="text-xs text-gray-700">• Keeper count verified</p>
                     </div>
                   </div>
-                  
+
                   <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
                       <Info className="h-5 w-5 text-blue-600" />
@@ -2019,22 +2019,22 @@ const ExampleReport = () => {
                 <Link to="/">
                   <Button size="lg" className="px-8">Start Your Vehicle Check</Button>
                 </Link>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Separator and Additional Showcase Sections */}
+        <div className="container mx-auto px-4 max-w-5xl">
+          <Separator className="my-12" />
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-foreground mb-2">More Example Data Modules</h2>
+            <p className="text-muted-foreground">See how different vehicle scenarios are presented in our reports</p>
+          </div>
+        </div>
+        <HomepageShowcaseSections />
       </div>
 
-      {/* Separator and Additional Showcase Sections */}
-      <div className="container mx-auto px-4 max-w-5xl">
-        <Separator className="my-12" />
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-foreground mb-2">More Example Data Modules</h2>
-          <p className="text-muted-foreground">See how different vehicle scenarios are presented in our reports</p>
-        </div>
-      </div>
-      <HomepageShowcaseSections />
-      </div>
-      
       <Footer />
     </div>
   );

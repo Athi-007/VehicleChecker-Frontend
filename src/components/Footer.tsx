@@ -8,7 +8,7 @@ export function Footer() {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Car className="h-6 w-6 text-primary" />
-              <span className="text-primary font-bold text-lg">VehicleIntel</span>
+              <span className="text-primary font-bold text-lg">Ruut</span>
             </div>
             <p className="text-muted-foreground text-sm">
               Professional vehicle reporting with customisable modules and AI-powered insights. 
@@ -41,7 +41,7 @@ export function Footer() {
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
-                <span>support@vehicleintel.com</span>
+                <span>support@ruut.info</span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
@@ -57,7 +57,10 @@ export function Footer() {
 
         <div className="border-t border-border mt-8 pt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            © 2024 VehicleIntel. All rights reserved. Data sourced from DVLA, DVSA, and trusted partners.
+            © 2024 Ruut. All rights reserved. Data sourced from DVLA, DVSA, and trusted partners.
+          </p>
+          <p className="text-xs text-muted-foreground/60 mt-2">
+            Managed by Leontek
           </p>
         </div>
       </div>

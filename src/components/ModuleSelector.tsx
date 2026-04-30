@@ -1,23 +1,27 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Car, 
-  Shield, 
-  TrendingUp, 
-  Wrench, 
-  AlertTriangle, 
-  FileText, 
-  Camera, 
-  Battery, 
-  Calculator, 
-  Target, 
+import {
+  Car,
+  Shield,
+  TrendingUp,
+  Wrench,
+  AlertTriangle,
+  FileText,
+  Camera,
+  Battery,
+  Calculator,
+  Target,
   CheckCircle,
   CreditCard,
   Eye
 } from "lucide-react";
+import { PostcodeModal } from "@/components/PostcodeModal";
+import { ReportLoadingScreen } from "@/components/ReportLoadingScreen";
+import { SnapshotBaseResponse } from "@/services/api";
 
 interface Module {
   id: string;
@@ -30,6 +34,7 @@ interface Module {
   features: string[];
   category: string;
   isFree: boolean;
+  needsPostcode?: boolean;
 }
 
 const modules: Module[] = [
@@ -111,7 +116,8 @@ const modules: Module[] = [
       "Theft and Break-in Hotspot - Crime density near buyer postcode"
     ],
     category: "Safety",
-    isFree: false
+    isFree: false,
+    needsPostcode: true
   },
   {
     id: "provenance",
@@ -175,7 +181,8 @@ const modules: Module[] = [
       "First Year Premium Estimate - Quote via affiliate API"
     ],
     category: "Insurance",
-    isFree: false
+    isFree: false,
+    needsPostcode: true
   },
   {
     id: "lifestyle",
@@ -209,13 +216,21 @@ const modules: Module[] = [
   }
 ];
 
-export function ModuleSelector() {
+interface ModuleSelectorProps {
+  registration?: string;
+  snapshotData?: SnapshotBaseResponse | null;
+}
+
+export function ModuleSelector({ registration, snapshotData }: ModuleSelectorProps) {
+  const navigate = useNavigate();
   const [selectedModules, setSelectedModules] = useState<Set<string>>(new Set(["snapshot"]));
+  const [showPostcodeModal, setShowPostcodeModal] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
+  const [postcode, setPostcode] = useState("");
 
   const toggleModule = (moduleId: string) => {
     const newSelected = new Set(selectedModules);
-    if (moduleId === "snapshot") return; // Can't deselect snapshot
-    
+    if (moduleId === "snapshot") return;
     if (newSelected.has(moduleId)) {
       newSelected.delete(moduleId);
     } else {
@@ -232,9 +247,42 @@ export function ModuleSelector() {
   };
 
   const handleGenerateReport = () => {
-    console.log("Generating report with modules:", Array.from(selectedModules));
-    console.log("Total cost:", calculateTotal());
-    // TODO: Integrate with API service and Stripe checkout
+    // Check if any selected module needs a postcode
+    const needsPostcode = Array.from(selectedModules).some(id => {
+      const mod = modules.find(m => m.id === id);
+      return mod?.needsPostcode;
+    });
+
+    if (needsPostcode && !postcode) {
+      setShowPostcodeModal(true);
+    } else {
+      startLoading();
+    }
+  };
+
+  const handlePostcodeSubmit = (pc: string) => {
+    setPostcode(pc);
+    setShowPostcodeModal(false);
+    startLoading();
+  };
+
+  const startLoading = () => {
+    setShowLoading(true);
+  };
+
+  const handleLoadingComplete = () => {
+    if (registration && snapshotData) {
+      navigate(`/report/${registration}`, {
+        state: {
+          snapshotData,
+          selectedModules: Array.from(selectedModules),
+          postcode,
+        }
+      });
+    } else {
+      // No registration yet — just close loading
+      setShowLoading(false);
+    }
   };
 
   const formatPrice = (pence: number) => {
@@ -259,15 +307,16 @@ export function ModuleSelector() {
             {modules.map((module) => {
               const isSelected = selectedModules.has(module.id);
               const Icon = module.icon;
-              
+
               return (
-                <Card 
-                  key={module.id} 
-                  className={`transition-all duration-300 hover:shadow-lg ${
-                    isSelected 
-                      ? 'ring-2 ring-primary shadow-md bg-primary/5' 
+                <Card
+                  key={module.id}
+                  className={`transition-all duration-300 hover:shadow-lg cursor-pointer ${
+                    isSelected
+                      ? 'ring-2 ring-primary shadow-md bg-primary/5'
                       : 'hover:shadow-md'
                   }`}
+                  onClick={() => toggleModule(module.id)}
                 >
                   <CardHeader className="pb-4">
                     <div className="flex items-start justify-between">
@@ -276,7 +325,7 @@ export function ModuleSelector() {
                           <Icon className="h-6 w-6" />
                         </div>
                         <div className="space-y-2">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3 flex-wrap">
                             <CardTitle className="text-lg">{module.title}</CardTitle>
                             <Badge variant={module.isFree ? "secondary" : "outline"}>
                               {module.category}
@@ -284,6 +333,11 @@ export function ModuleSelector() {
                             <Badge variant={module.isFree ? "default" : "secondary"} className="font-bold">
                               {formatPrice(module.priceToUser)}
                             </Badge>
+                            {module.needsPostcode && (
+                              <Badge variant="outline" className="text-xs text-muted-foreground border-dashed">
+                                📍 Needs postcode
+                              </Badge>
+                            )}
                           </div>
                           <CardDescription className="text-sm">
                             {module.description}
@@ -294,19 +348,20 @@ export function ModuleSelector() {
                         checked={isSelected}
                         onCheckedChange={() => toggleModule(module.id)}
                         disabled={module.id === "snapshot"}
-                        className="ml-4"
+                        className="ml-4 shrink-0"
+                        onClick={(e) => e.stopPropagation()}
                       />
                     </div>
                   </CardHeader>
-                  
+
                   <CardContent className="pt-0">
                     <div className="space-y-3">
                       <div className="grid grid-cols-1 gap-3">
                         {module.features.map((feature, index) => {
                           const [title, description] = feature.split(' - ');
                           return (
-                            <div 
-                              key={index} 
+                            <div
+                              key={index}
                               className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors border border-border/30"
                             >
                               <div className="mt-0.5">
@@ -322,7 +377,7 @@ export function ModuleSelector() {
                           );
                         })}
                       </div>
-                      
+
                       <div className="pt-3 border-t border-border/50">
                         <p className="text-sm text-primary font-medium">
                           AI Enhancement: {module.aiEnhancement}
@@ -335,6 +390,7 @@ export function ModuleSelector() {
             })}
           </div>
 
+          {/* Order Summary Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-24">
               <Card className="shadow-lg">
@@ -349,7 +405,6 @@ export function ModuleSelector() {
                     {Array.from(selectedModules).map(id => {
                       const module = modules.find(m => m.id === id);
                       if (!module) return null;
-                      
                       return (
                         <div key={id} className="flex justify-between items-center text-sm">
                           <span className="text-foreground pr-2">{module.title}</span>
@@ -358,22 +413,29 @@ export function ModuleSelector() {
                       );
                     })}
                   </div>
-                  
+
                   <div className="border-t border-border pt-4">
                     <div className="flex justify-between items-center text-lg font-bold">
                       <span>Total</span>
                       <span className="text-primary">{formatPrice(calculateTotal())}</span>
                     </div>
                   </div>
-                  
-                  <Button 
-                    className="w-full mt-6" 
+
+                  <Button
+                    className="w-full mt-6"
                     size="lg"
                     onClick={handleGenerateReport}
+                    disabled={!registration}
                   >
                     Generate Report
                   </Button>
-                  
+
+                  {!registration && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      Search for a vehicle above first
+                    </p>
+                  )}
+
                   <p className="text-xs text-muted-foreground text-center">
                     Secure payment via Stripe. Reports cached for 24 hours.
                   </p>
@@ -383,6 +445,19 @@ export function ModuleSelector() {
           </div>
         </div>
       </div>
+
+      {/* Postcode Modal */}
+      <PostcodeModal
+        open={showPostcodeModal}
+        onClose={() => setShowPostcodeModal(false)}
+        onSubmit={handlePostcodeSubmit}
+      />
+
+      {/* Loading Screen */}
+      <ReportLoadingScreen
+        open={showLoading}
+        onComplete={handleLoadingComplete}
+      />
     </section>
   );
 }

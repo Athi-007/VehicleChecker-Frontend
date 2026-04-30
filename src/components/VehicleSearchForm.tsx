@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Car, AlertCircle } from "lucide-react";
+import { Search, Car, AlertCircle, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { vehicleService, SnapshotBaseResponse } from '@/services/api';
 
@@ -18,30 +18,10 @@ export function VehicleSearchForm({ onSearch, className = "" }: VehicleSearchFor
   const [vehicleData, setVehicleData] = useState<SnapshotBaseResponse | null>(null);
   const { toast } = useToast();
 
-  const formatRegistration = (value: string) => {
-    // Remove spaces and convert to uppercase
-    const cleaned = value.replace(/\s/g, '').toUpperCase();
-
-    // Add space in the right place for UK registration
-    if (cleaned.length > 2) {
-      const part1 = cleaned.slice(0, 2);
-      const part2 = cleaned.slice(2, 4);
-      const part3 = cleaned.slice(4, 7);
-
-      if (part3) {
-        return `${part1}${part2} ${part3}`;
-      } else if (part2) {
-        return `${part1}${part2}`;
-      }
-    }
-
-    return cleaned;
-  };
-
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatRegistration(e.target.value);
-    setRegistration(formatted);
+    // Strip all spaces, uppercase only — no auto-formatting
+    const cleaned = e.target.value.replace(/\s/g, '').toUpperCase();
+    setRegistration(cleaned);
   };
 
   const handleSearch = async () => {
@@ -94,11 +74,9 @@ export function VehicleSearchForm({ onSearch, className = "" }: VehicleSearchFor
   };
 
   const info = vehicleData?.vehicle_info;
-  const tax = vehicleData?.tax_status;
-  const mot = vehicleData?.mot_history;
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={`space-y-4 ${className}`}>
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -113,12 +91,12 @@ export function VehicleSearchForm({ onSearch, className = "" }: VehicleSearchFor
           <div className="flex gap-2">
             <div className="flex-1">
               <Input
-                placeholder="e.g., AB12 CDE"
+                placeholder="e.g. AB12CDE"
                 value={registration}
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
                 className="text-lg font-mono uppercase"
-                maxLength={8}
+                maxLength={7}
               />
             </div>
             <Button
@@ -145,59 +123,40 @@ export function VehicleSearchForm({ onSearch, className = "" }: VehicleSearchFor
         </CardContent>
       </Card>
 
+      {/* Compact vehicle summary card */}
       {info && (
-        <Card className="shadow-lg animate-fade-in">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Vehicle Details</span>
-              <Badge variant="secondary">{info.registration}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Make:</span>
-                  <span className="font-medium">{info.make}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Model:</span>
-                  <span className="font-medium">{info.model}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Year:</span>
-                  <span className="font-medium">{info.year}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Colour:</span>
-                  <span className="font-medium">{info.color}</span>
-                </div>
-              </div>
+        <Card className="shadow-md border-primary/20 bg-primary/5 animate-in fade-in-0 slide-in-from-top-2 duration-300">
+          <CardContent className="py-4">
+            <div className="flex items-center gap-3 mb-3">
+              <CheckCircle className="h-5 w-5 text-green-600 shrink-0" />
+              <h3 className="font-semibold text-foreground">Vehicle Found</h3>
+              <Badge className="bg-primary/10 text-primary border border-primary/20 font-mono ml-auto">
+                {info.registration}
+              </Badge>
+            </div>
 
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Mileage:</span>
-                  <span className="font-medium">{info.mileage?.toLocaleString()} miles</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tax Status:</span>
-                  <Badge variant="secondary" className="text-xs">{tax?.tax_status || 'N/A'}</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">MOT Status:</span>
-                  <Badge
-                    variant="secondary"
-                    className={`text-xs ${mot?.current_status === 'PASSED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
-                  >
-                    {mot?.current_status || 'N/A'}
-                  </Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">MOT Valid Until:</span>
-                  <span className="font-medium">{mot?.valid_until || 'N/A'}</span>
-                </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+              <div>
+                <p className="text-xs text-muted-foreground">Make & Model</p>
+                <p className="font-semibold">{info.make} {info.model}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Year</p>
+                <p className="font-semibold">{info.year}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Colour</p>
+                <p className="font-semibold">{info.color}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Mileage</p>
+                <p className="font-semibold">{info.mileage?.toLocaleString() ?? 'N/A'} miles</p>
               </div>
             </div>
+
+            <p className="text-sm text-muted-foreground mt-4 pt-3 border-t border-primary/10">
+              Select the sections you'd like included in your report below, then click <strong>'Generate Report'</strong> to proceed.
+            </p>
           </CardContent>
         </Card>
       )}

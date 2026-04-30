@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Car, Shield, FileText, AlertTriangle, CheckCircle, Info,
   Battery, Eye, Heart, Wrench, TrendingUp, Users, Key, Loader2, MapPin, Calculator
@@ -141,7 +142,7 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
                 {info.year} {info.make} {info.model}
               </CardTitle>
               <CardDescription>
-                Snapshot Base — {info.registration} • {info.color} • {info.mileage?.toLocaleString()} miles
+                Snapshot Base — {info.registration} • {info.color} • {info.mileage?.toLocaleString()} miles (est)
               </CardDescription>
             </div>
             <Badge className="bg-green-100 text-green-800">FREE</Badge>
@@ -280,6 +281,7 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
             {mot?.mileage_progression && mot.mileage_progression.length > 0 && (() => {
               const maxMil = Math.max(...mot.mileage_progression.map((m: any) => m[1] as number));
               const chartMax = maxMil > 0 ? Math.ceil(maxMil / 10000) * 10000 : 50000;
+              const CHART_HEIGHT = 180; // px — fixed height for reliable bar rendering
 
               return (
                 <div className="mt-6 p-4 bg-muted/30 rounded-lg border">
@@ -287,9 +289,11 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
                     <span>Mileage Progression Chart</span>
                     <span className="text-xs text-muted-foreground">Annual average: {mot.average_annual_mileage?.toLocaleString() || 0} mi/yr</span>
                   </h5>
-                  <div className="relative h-48 flex items-end justify-between gap-2 sm:gap-3 border-l-2 border-b-2 border-muted-foreground/20 pl-6 sm:pl-8 pb-2 pt-4">
+
+                  {/* Chart area */}
+                  <div className="flex" style={{ height: CHART_HEIGHT + 28 }}>
                     {/* Y-axis labels */}
-                    <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[10px] sm:text-xs text-muted-foreground -ml-2 pb-8 items-end w-6 sm:w-8">
+                    <div className="flex flex-col justify-between text-[10px] sm:text-xs text-muted-foreground pr-2 items-end shrink-0" style={{ height: CHART_HEIGHT }}>
                       <span>{Math.round(chartMax / 1000)}k</span>
                       <span>{Math.round(chartMax * 0.8 / 1000)}k</span>
                       <span>{Math.round(chartMax * 0.6 / 1000)}k</span>
@@ -298,26 +302,34 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
                       <span>0</span>
                     </div>
 
-                    {/* Bars */}
-                    {mot.mileage_progression.map((point: any, idx: number) => {
-                      const dateStr = point[0];
-                      const year = dateStr ? new Date(dateStr).getFullYear() : 'Unknown';
-                      const mileage = point[1] as number;
-                      const heightPct = Math.max((mileage / chartMax) * 100, 2);
+                    {/* Bars container */}
+                    <div className="flex-1 flex items-end gap-2 sm:gap-3 border-l-2 border-b-2 border-muted-foreground/20 pl-2">
+                      {mot.mileage_progression.map((point: any, idx: number) => {
+                        const dateStr = point[0];
+                        const year = dateStr ? new Date(dateStr).getFullYear() : 'Unknown';
+                        const mileage = point[1] as number;
+                        const barHeight = Math.max((mileage / chartMax) * CHART_HEIGHT, 3);
 
-                      return (
-                        <div key={idx} className="flex-1 flex flex-col items-center group relative">
-                          <div className="absolute -top-7 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-[10px] px-2 py-1 rounded pointer-events-none whitespace-nowrap z-10">
-                            {mileage.toLocaleString()} mi
+                        return (
+                          <div key={idx} className="flex-1 flex flex-col items-center group">
+                            {/* Bar wrapper — fixed to chart height, bar grows from bottom */}
+                            <div className="w-full flex flex-col justify-end items-center relative" style={{ height: CHART_HEIGHT }}>
+                              {/* Hover tooltip */}
+                              <div className="absolute top-0 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-[10px] px-2 py-1 rounded pointer-events-none whitespace-nowrap z-10">
+                                {mileage.toLocaleString()} mi
+                              </div>
+                              {/* The bar */}
+                              <div
+                                className="w-full max-w-[40px] bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all duration-500 group-hover:from-blue-700 group-hover:to-blue-500"
+                                style={{ height: barHeight }}
+                              ></div>
+                            </div>
+                            {/* X-axis label */}
+                            <span className="text-[10px] sm:text-xs mt-2 font-medium truncate w-full text-center">{year}</span>
                           </div>
-                          <div
-                            className="w-full max-w-[40px] bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all group-hover:from-blue-700 group-hover:to-blue-500"
-                            style={{ height: `${heightPct}%` }}
-                          ></div>
-                          <span className="text-[10px] sm:text-xs mt-2 font-medium truncate w-full text-center">{year}</span>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
 
                   <div className="mt-4 grid grid-cols-2 gap-4 text-xs">
@@ -376,28 +388,43 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
             </div>
           )}
 
-          {/* AI Analysis */}
-          <div className="bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 border-2 border-purple-300 rounded-lg p-4">
-            <h4 className="font-semibold mb-3 flex items-center gap-2 text-purple-900">
-              <TrendingUp className="h-5 w-5 text-purple-600" />
-              AI Analysis
-            </h4>
-            <p className="text-sm text-purple-800 mb-3">{ai_analysis?.overall_assessment?.recommendation || 'No recommendation available.'}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="bg-white rounded-lg p-3 border border-purple-200">
-                <h5 className="text-xs font-bold text-green-800 mb-1">Strengths</h5>
-                <ul className="text-xs space-y-1">
-                  {(ai_analysis?.market_position?.strengths || []).map((s, i) => (
+          {/* AI Analysis — full purple card matching Build Sheet style */}
+          <div className="bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 border-2 border-purple-300 rounded-lg p-6">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="p-3 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h4 className="text-lg font-bold text-purple-900">AI Analysis: Vehicle Overview</h4>
+                <p className="text-sm text-purple-700">Key highlights from MOT history and market position</p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg p-4 border border-purple-200 mb-4">
+              <p className="text-sm text-gray-700">{ai_analysis?.overall_assessment?.recommendation || 'No recommendation available.'}</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-white rounded-lg p-4 border border-purple-200">
+                <h5 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  Strengths
+                </h5>
+                <ul className="text-xs space-y-1 text-gray-700">
+                  {(ai_analysis?.market_position?.strengths || []).map((s: string, i: number) => (
                     <li key={i} className="flex items-start gap-1"><CheckCircle className="h-3 w-3 text-green-600 mt-0.5 shrink-0" /> {s}</li>
                   ))}
                   {(!ai_analysis?.market_position?.strengths?.length) && <li className="text-muted-foreground">None identified</li>}
                 </ul>
               </div>
-              <div className="bg-white rounded-lg p-3 border border-purple-200">
-                <h5 className="text-xs font-bold text-red-800 mb-1">Risks</h5>
-                <ul className="text-xs space-y-1">
-                  {(ai_analysis?.market_position?.risks || []).map((r, i) => (
-                    <li key={i} className="flex items-start gap-1"><AlertTriangle className="h-3 w-3 text-red-600 mt-0.5 shrink-0" /> {r}</li>
+              <div className="bg-white rounded-lg p-4 border border-purple-200">
+                <h5 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-600" />
+                  Risks
+                </h5>
+                <ul className="text-xs space-y-1 text-gray-700">
+                  {(ai_analysis?.market_position?.risks || []).map((r: string, i: number) => (
+                    <li key={i} className="flex items-start gap-1"><AlertTriangle className="h-3 w-3 text-red-500 mt-0.5 shrink-0" /> {r}</li>
                   ))}
                   {(!ai_analysis?.market_position?.risks?.length) && <li className="text-muted-foreground">None identified</li>}
                 </ul>
@@ -787,7 +814,7 @@ function BuildSheetSection({ data }: { data: any }) {
       )}
 
       {/* Optional Extras */}
-      {data.optional_extras?.items?.length > 0 && (
+      {data.optional_extras?.items?.length > 0 ? (
         <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <h4 className="font-semibold text-lg">Optional Extras Fitted</h4>
@@ -820,6 +847,18 @@ function BuildSheetSection({ data }: { data: any }) {
               )}
             </div>
           )}
+        </div>
+      ) : (
+        <div className="bg-muted/20 rounded-lg p-6 border border-dashed border-muted-foreground/30">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-muted/40 rounded-lg">
+              <FileText className="h-5 w-5 text-muted-foreground/50" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-muted-foreground">Optional Extras Fitted</p>
+              <p className="text-xs text-muted-foreground/70 mt-0.5">No optional extras data available for this vehicle — it may have been supplied to standard specification.</p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -910,7 +949,7 @@ function ProvenanceSection({ data }: { data: ProvenanceResponse }) {
           {data.writeoff?.ai_insight ? <AlertTriangle className="h-4 w-4 text-red-600" /> : <CheckCircle className="h-4 w-4 text-green-600" />}
           Write-off Check
         </h5>
-        <p className="text-xs mt-1">{data.writeoff?.ai_insight || 'No write-off history found ✓'}</p>
+        <p className={`text-xs mt-1 ${data.writeoff?.ai_insight ? 'text-red-700' : 'text-green-700'}`}>{data.writeoff?.ai_insight || 'No write-off history found ✓'}</p>
       </div>
 
       <div className={`rounded-lg p-4 border ${data.finance ? 'bg-red-50 border-red-300' : 'bg-green-50 border-green-200'}`}>
@@ -973,7 +1012,17 @@ function ProvenanceSection({ data }: { data: ProvenanceResponse }) {
           {data.stolen_info ? <AlertTriangle className="h-4 w-4 text-red-600" /> : <CheckCircle className="h-4 w-4 text-green-600" />}
           Stolen Record
         </h5>
-        <p className="text-xs mt-1">{data.stolen_info ? JSON.stringify(data.stolen_info) : 'Not reported stolen ✓'}</p>
+        <p className={`text-xs mt-1 ${data.stolen_info ? 'text-red-700' : 'text-green-700'}`}>{data.stolen_info ? JSON.stringify(data.stolen_info) : 'Not reported stolen ✓'}</p>
+      </div>
+
+      <div className={`rounded-lg p-4 border ${data.import_export ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
+        <h5 className="text-sm font-semibold flex items-center gap-2">
+          {data.import_export ? <AlertTriangle className="h-4 w-4 text-amber-600" /> : <CheckCircle className="h-4 w-4 text-green-600" />}
+          Export / Import History
+        </h5>
+        <p className={`text-xs mt-1 ${data.import_export ? 'text-amber-700' : 'text-green-700'}`}>
+          {data.import_export ? JSON.stringify(data.import_export) : 'No import or export record found ✓'}
+        </p>
       </div>
 
       {data.keepers && (
@@ -990,11 +1039,6 @@ function ProvenanceSection({ data }: { data: ProvenanceResponse }) {
               </div>
             ))}
           </div>
-          {data.keepers.ai_insight && (
-            <p className="text-xs text-amber-700 mt-2 bg-amber-50 p-2 rounded border border-amber-200">
-              💡 {data.keepers.ai_insight}
-            </p>
-          )}
         </div>
       )}
 
@@ -1007,11 +1051,43 @@ function ProvenanceSection({ data }: { data: ProvenanceResponse }) {
               <span className="text-muted-foreground ml-2">({plate.date_of_transaction})</span>
             </div>
           ))}
-          {data.plates.ai_insight && (
-            <p className="text-xs text-blue-700 mt-2 bg-blue-50 p-2 rounded border border-blue-200">
-              💡 {data.plates.ai_insight}
-            </p>
-          )}
+        </div>
+      )}
+
+      {/* Consolidated AI Analysis — purple card matching Build Sheet style */}
+      {(data.keepers?.ai_insight || data.plates?.ai_insight) && (
+        <div className="bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 border-2 border-purple-300 rounded-lg p-6">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="p-3 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg">
+              <Key className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h4 className="text-lg font-bold text-purple-900">AI Analysis: Provenance & Ownership</h4>
+              <p className="text-sm text-purple-700">Key insights on vehicle history and legal status</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {data.keepers?.ai_insight && (
+              <div className="bg-white rounded-lg p-4 border border-purple-200">
+                <h5 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  <Users className="h-4 w-4 text-purple-600" />
+                  Keeper History
+                </h5>
+                <p className="text-xs text-gray-700">{data.keepers.ai_insight}</p>
+              </div>
+            )}
+
+            {data.plates?.ai_insight && (
+              <div className="bg-white rounded-lg p-4 border border-purple-200">
+                <h5 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-purple-600" />
+                  Registration Plates
+                </h5>
+                <p className="text-xs text-gray-700">{data.plates.ai_insight}</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -1112,20 +1188,46 @@ function SafetyAssessmentSection({ data }: { data: any }) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             {crime && (
               <div className="bg-white rounded-lg p-4 border-2 border-amber-200">
-                <p className="text-xs text-muted-foreground mb-2">Local Area Risk</p>
+                <div className="flex items-center gap-1 mb-2">
+                  <p className="text-xs text-muted-foreground">Local Area Risk</p>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button className="text-muted-foreground hover:text-foreground transition-colors">
+                          <Info className="h-3 w-3" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-[220px] text-xs">
+                        Crime rate per 1,000 population in the registered keeper's area, based on latest police data.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <div className="mb-3">
-                  <span className="px-2 py-1 rounded text-xs font-semibold text-white" style={{ backgroundColor: crime.risk?.color || '#f59e0b' }}>
-                    {crime.risk?.status || 'Unknown Risk'}
-                  </span>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span
+                          className="px-2 py-1 rounded text-xs font-semibold text-white cursor-default"
+                          style={{ backgroundColor: crime.risk?.color || '#f59e0b' }}
+                        >
+                          {crime.risk?.status || 'Unknown Risk'}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-[220px] text-xs">
+                        {crime.risk?.description || `This area has a ${crime.risk?.status?.toLowerCase() || 'unknown'} crime rating based on overall and vehicle-specific crime statistics from police.uk data.`}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
                     <span>Overall crime rate</span>
-                    <span className="font-semibold">{crime.general_crime_rate_per_1000}/1k</span>
+                    <span className="font-semibold">{crime.general_crime_rate_per_1000}/1,000</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-amber-600">Vehicle crime</span>
-                    <span className="font-semibold text-amber-600">{crime.vehicle_crime_rate_per_1000}/1k</span>
+                    <span className="font-semibold text-amber-600">{crime.vehicle_crime_rate_per_1000}/1,000</span>
                   </div>
                 </div>
               </div>
@@ -1147,7 +1249,7 @@ function SafetyAssessmentSection({ data }: { data: any }) {
                   <AlertTriangle className="h-5 w-5 text-red-600 shrink-0" />
                   <p className="text-sm font-semibold text-red-900 leading-tight">{vulns[0].type}</p>
                 </div>
-                <p className="text-xs text-gray-700 line-clamp-2" title={vulns[0].summary}>{vulns[0].summary}</p>
+                <p className="text-xs text-gray-700">{vulns[0].summary}</p>
               </div>
             )}
           </div>
@@ -1274,9 +1376,19 @@ function SafetyAssessmentSection({ data }: { data: any }) {
 function EVInsightsSection({ data }: { data: EVInsightsResponse }) {
   if (!data.ev) {
     return (
-      <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground">
-        <Info className="h-4 w-4 inline mr-1" />
-        {data.reason || 'This vehicle is not an electric vehicle or EV data is unavailable.'}
+      <div className="bg-muted/20 rounded-lg p-6 border border-dashed border-muted-foreground/30 opacity-50">
+        <div className="flex flex-col items-center justify-center text-center gap-3 py-4">
+          <div className="p-3 bg-muted/40 rounded-full">
+            <Battery className="h-8 w-8 text-muted-foreground/50" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-muted-foreground">EV Battery & Charging</p>
+            <p className="text-xs text-muted-foreground/70 mt-1">
+              {data.reason || 'This section is not applicable — this vehicle is not electric.'}
+            </p>
+          </div>
+          <Badge variant="outline" className="text-xs text-muted-foreground/60 border-muted-foreground/30">Not Applicable</Badge>
+        </div>
       </div>
     );
   }
@@ -1313,16 +1425,29 @@ function LifestyleFitSection({ data }: { data: LifestyleFitResponse }) {
       </div>
 
       {data.ai_analysis && (
-        <div className="bg-gradient-to-br from-pink-50 to-purple-50 border border-pink-300 rounded-lg p-4">
-          <h5 className="text-sm font-bold text-pink-900 mb-2">AI Lifestyle Assessment</h5>
-          <ul className="space-y-1 text-xs text-pink-800">
-            {data.ai_analysis.lifestyle.map((item, i) => (
-              <li key={i}>• {item}</li>
-            ))}
-          </ul>
-          <p className="text-xs font-semibold text-pink-900 mt-2 pt-2 border-t border-pink-200">
-            Verdict: {data.ai_analysis.verdict}
-          </p>
+        <div className="bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 border-2 border-purple-300 rounded-lg p-6">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="p-3 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg">
+              <Heart className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h4 className="text-lg font-bold text-purple-900">AI Analysis: Lifestyle Fit</h4>
+              <p className="text-sm text-purple-700">How this vehicle fits your daily needs</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg p-4 border border-purple-200 mb-4">
+            <ul className="space-y-1 text-xs text-gray-700">
+              {data.ai_analysis.lifestyle.map((item, i) => (
+                <li key={i}>• {item}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-lg">
+            <p className="text-sm font-semibold text-green-900 mb-1">✓ Lifestyle Verdict</p>
+            <p className="text-xs text-green-800">{data.ai_analysis.verdict}</p>
+          </div>
         </div>
       )}
     </div>
