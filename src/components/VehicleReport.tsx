@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,8 @@ import {
 interface VehicleReportProps {
   registration: string;
   snapshotData: SnapshotBaseResponse;
+  selectedModules?: string[];
+  postcode?: string;
 }
 
 interface ModuleData {
@@ -34,7 +36,17 @@ interface ModuleData {
   prePurchase: ApiResponse<PrePurchaseInspectionsResponse> | null;
 }
 
-export function VehicleReport({ registration, snapshotData }: VehicleReportProps) {
+// Map from ModuleSelector IDs → internal fetch keys
+const MODULE_ID_MAP: Record<string, string> = {
+  'build-sheet': 'build-sheet',
+  'safety': 'safety',
+  'provenance': 'provenance',
+  'electric': 'ev-insights',
+  'lifestyle': 'lifestyle-fit',
+  'viewing': 'pre-purchase',
+};
+
+export function VehicleReport({ registration, snapshotData, selectedModules = [], postcode = '' }: VehicleReportProps) {
   const [moduleData, setModuleData] = useState<ModuleData>({
     buildSheet: null,
     safety: null,
@@ -44,14 +56,15 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
     prePurchase: null,
   });
   const [loadingModules, setLoadingModules] = useState<Set<string>>(new Set());
-  const [loadingAll, setLoadingAll] = useState(false);
 
-  // Safety module: structured UK address fields
+  // Safety module: manual address input (only used when navigating directly without postcode)
   const [safetyAddr, setSafetyAddr] = useState({ line1: '', city: '', postcode: '' });
   const [showSafetyAddressInput, setShowSafetyAddressInput] = useState(false);
-  // "Load All" address prompt
-  const [showAllAddressInput, setShowAllAddressInput] = useState(false);
-  const [allAddr, setAllAddr] = useState({ line1: '', city: '', postcode: '' });
+
+  // Derive which internal module keys were requested
+  const requestedKeys = selectedModules
+    .map(id => MODULE_ID_MAP[id])
+    .filter(Boolean);
 
   // UK postcode regex (e.g. SW1A 2AA, EC1A 1BB, M1 1AA)
   const UK_POSTCODE_RE = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
@@ -102,23 +115,14 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
     }
   };
 
-  const fetchAllModules = async (address: string) => {
-    setLoadingAll(true);
-    setShowAllAddressInput(false);
-    try {
-      const results = await vehicleService.fetchAllModules(registration, address);
-      setModuleData({
-        buildSheet: results.buildSheet,
-        safety: results.safety,
-        provenance: results.provenance,
-        evInsights: results.evInsights,
-        lifestyleFit: results.lifestyleFit,
-        prePurchase: results.prePurchase,
-      });
-    } finally {
-      setLoadingAll(false);
-    }
-  };
+  // Auto-fetch selected modules on mount
+  useEffect(() => {
+    if (requestedKeys.length === 0) return;
+    requestedKeys.forEach(key => {
+      const address = key === 'safety' ? postcode : undefined;
+      fetchModule(key, address ? { address } : undefined);
+    });
+  }, []);
 
   // Defensive destructure — guard against missing / differently-shaped API data
   const info = snapshotData?.vehicle_info ?? { registration: '', make: '', model: '', year: 0, color: '', mileage: 0 };
@@ -434,118 +438,45 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
         </CardContent>
       </Card>
 
-      {/* ======= LOAD ALL MODULES BUTTON ======= */}
-      <div className="text-center space-y-3">
-        {!showAllAddressInput ? (
-          <Button
-            onClick={() => setShowAllAddressInput(true)}
-            disabled={loadingAll}
-            size="lg"
-            className="px-8"
-          >
-            {loadingAll ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Loading All Modules...
-              </>
-            ) : (
-              <>Load All Report Modules</>
-            )}
-          </Button>
-        ) : (
-          <div className="bg-card border border-border rounded-xl p-4 shadow-sm max-w-xl mx-auto w-full space-y-3">
-            <div className="flex items-center gap-2 mb-1">
-              <MapPin className="h-5 w-5 text-amber-500 shrink-0" />
-              <span className="text-sm font-semibold">Enter UK Address for Safety Assessment</span>
-            </div>
-            <Input
-              placeholder="Address Line 1 (e.g. 10 Downing St)"
-              value={allAddr.line1}
-              onChange={e => setAllAddr(prev => ({ ...prev, line1: e.target.value }))}
-              className="text-sm"
-            />
-            <div className="grid grid-cols-2 gap-2">
-              <Input
-                placeholder="City / Town (e.g. London)"
-                value={allAddr.city}
-                onChange={e => setAllAddr(prev => ({ ...prev, city: e.target.value }))}
-                className="text-sm"
-              />
-              <Input
-                placeholder="Postcode (e.g. SW1A 2AA)"
-                value={allAddr.postcode}
-                onChange={e => setAllAddr(prev => ({ ...prev, postcode: e.target.value.toUpperCase() }))}
-                className={`text-sm font-mono ${allAddr.postcode && !isValidPostcode(allAddr.postcode) ? 'border-red-400 focus-visible:ring-red-400' : ''}`}
-                maxLength={8}
-              />
-            </div>
-            {allAddr.postcode && !isValidPostcode(allAddr.postcode) && (
-              <p className="text-xs text-red-600">Please enter a valid UK postcode (e.g. SW1A 2AA)</p>
-            )}
-            <div className="flex gap-2 justify-end">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowAllAddressInput(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => isAddrComplete(allAddr) && fetchAllModules(buildAddress(allAddr))}
-                disabled={!isAddrComplete(allAddr)}
-                size="sm"
-              >
-                Load All
-              </Button>
-            </div>
-          </div>
-        )}
-        <p className="text-xs text-muted-foreground">
-          A valid UK postcode is required for the Safety &amp; Risk Assessment module • Or load individual sections below
-        </p>
-      </div>
+      {/* Selected modules indicator */}
+      {requestedKeys.length > 0 && (
+        <div className="bg-primary/5 border border-primary/20 rounded-lg px-4 py-3 flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className={`h-4 w-4 text-primary ${loadingModules.size > 0 ? 'animate-spin' : 'hidden'}`} />
+          <span>{loadingModules.size > 0 ? 'Fetching your selected modules…' : 'Report generated with your selected modules.'}</span>
+        </div>
+      )}
 
       {/* ======= 2. BUILD SHEET ======= */}
-      <ModuleCard
-        title="Build Sheet & Factory Options"
-        icon={<FileText className="h-5 w-5 text-blue-600" />}
-        isLoaded={!!moduleData.buildSheet}
-        isLoading={loadingModules.has('build-sheet') || loadingAll}
-        onLoad={() => fetchModule('build-sheet')}
-        error={moduleData.buildSheet?.success === false ? moduleData.buildSheet.error : undefined}
-      >
-        {moduleData.buildSheet?.data && <BuildSheetSection data={moduleData.buildSheet.data} />}
-      </ModuleCard>
+      {(requestedKeys.length === 0 || requestedKeys.includes('build-sheet')) && (
+        <ModuleCard
+          title="Build Sheet & Factory Options"
+          icon={<FileText className="h-5 w-5 text-blue-600" />}
+          isLoaded={!!moduleData.buildSheet}
+          isLoading={loadingModules.has('build-sheet')}
+          onLoad={() => fetchModule('build-sheet')}
+          error={moduleData.buildSheet?.success === false ? moduleData.buildSheet.error : undefined}
+        >
+          {moduleData.buildSheet?.data && <BuildSheetSection data={moduleData.buildSheet.data} />}
+        </ModuleCard>
+      )}
 
       {/* ======= 3. SAFETY ASSESSMENT ======= */}
-      <ModuleCard
-        title="Safety & Risk Assessment"
-        icon={<Shield className="h-5 w-5 text-amber-600" />}
-        isLoaded={!!moduleData.safety}
-        isLoading={loadingModules.has('safety') || loadingAll}
-        onLoad={() => setShowSafetyAddressInput(true)}
-        error={moduleData.safety?.success === false ? moduleData.safety.error : undefined}
-      >
-        {/* Address input shown before fetching */}
-        {showSafetyAddressInput && !moduleData.safety && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-3 space-y-3">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-amber-600 shrink-0" />
-              <span className="text-sm font-semibold text-amber-900">Enter UK Address</span>
-            </div>
-            <Input
-              placeholder="Address Line 1 (e.g. 10 Downing St)"
-              value={safetyAddr.line1}
-              onChange={e => setSafetyAddr(prev => ({ ...prev, line1: e.target.value }))}
-              className="text-sm"
-            />
-            <div className="grid grid-cols-2 gap-2">
-              <Input
-                placeholder="City / Town"
-                value={safetyAddr.city}
-                onChange={e => setSafetyAddr(prev => ({ ...prev, city: e.target.value }))}
-                className="text-sm"
-              />
+      {(requestedKeys.length === 0 || requestedKeys.includes('safety')) && (
+        <ModuleCard
+          title="Safety & Risk Assessment"
+          icon={<Shield className="h-5 w-5 text-amber-600" />}
+          isLoaded={!!moduleData.safety}
+          isLoading={loadingModules.has('safety')}
+          onLoad={() => setShowSafetyAddressInput(true)}
+          error={moduleData.safety?.success === false ? moduleData.safety.error : undefined}
+        >
+          {/* Manual address input — only shown when no postcode was passed from homepage */}
+          {showSafetyAddressInput && !moduleData.safety && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-3 space-y-3">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-amber-600 shrink-0" />
+                <span className="text-sm font-semibold text-amber-900">Enter UK Postcode</span>
+              </div>
               <Input
                 placeholder="Postcode (e.g. SW1A 2AA)"
                 value={safetyAddr.postcode}
@@ -553,83 +484,85 @@ export function VehicleReport({ registration, snapshotData }: VehicleReportProps
                 className={`text-sm font-mono ${safetyAddr.postcode && !isValidPostcode(safetyAddr.postcode) ? 'border-red-400 focus-visible:ring-red-400' : ''}`}
                 maxLength={8}
               />
+              {safetyAddr.postcode && !isValidPostcode(safetyAddr.postcode) && (
+                <p className="text-xs text-red-600">Please enter a valid UK postcode (e.g. SW1A 2AA)</p>
+              )}
+              <div className="flex gap-2 justify-end">
+                <Button size="sm" variant="ghost" onClick={() => setShowSafetyAddressInput(false)}>Cancel</Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (isValidPostcode(safetyAddr.postcode)) {
+                      setShowSafetyAddressInput(false);
+                      fetchModule('safety', { address: safetyAddr.postcode });
+                    }
+                  }}
+                  disabled={!isValidPostcode(safetyAddr.postcode)}
+                >
+                  Confirm
+                </Button>
+              </div>
             </div>
-            {safetyAddr.postcode && !isValidPostcode(safetyAddr.postcode) && (
-              <p className="text-xs text-red-600">Please enter a valid UK postcode (e.g. SW1A 2AA)</p>
-            )}
-            <div className="flex gap-2 justify-end">
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setShowSafetyAddressInput(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => {
-                  if (isAddrComplete(safetyAddr)) {
-                    setShowSafetyAddressInput(false);
-                    fetchModule('safety', { address: buildAddress(safetyAddr) });
-                  }
-                }}
-                disabled={!isAddrComplete(safetyAddr)}
-              >
-                Confirm
-              </Button>
-            </div>
-          </div>
-        )}
-        {moduleData.safety?.data && <SafetyAssessmentSection data={moduleData.safety.data} />}
-      </ModuleCard>
+          )}
+          {moduleData.safety?.data && <SafetyAssessmentSection data={moduleData.safety.data} />}
+        </ModuleCard>
+      )}
 
       {/* ======= 4. PROVENANCE ======= */}
-      <ModuleCard
-        title="Provenance & Risk Registers"
-        icon={<Key className="h-5 w-5 text-red-600" />}
-        isLoaded={!!moduleData.provenance}
-        isLoading={loadingModules.has('provenance') || loadingAll}
-        onLoad={() => fetchModule('provenance')}
-        error={moduleData.provenance?.success === false ? moduleData.provenance.error : undefined}
-      >
-        {moduleData.provenance?.data && <ProvenanceSection data={moduleData.provenance.data} />}
-      </ModuleCard>
+      {(requestedKeys.length === 0 || requestedKeys.includes('provenance')) && (
+        <ModuleCard
+          title="Provenance & Risk Registers"
+          icon={<Key className="h-5 w-5 text-red-600" />}
+          isLoaded={!!moduleData.provenance}
+          isLoading={loadingModules.has('provenance')}
+          onLoad={() => fetchModule('provenance')}
+          error={moduleData.provenance?.success === false ? moduleData.provenance.error : undefined}
+        >
+          {moduleData.provenance?.data && <ProvenanceSection data={moduleData.provenance.data} />}
+        </ModuleCard>
+      )}
 
       {/* ======= 5. EV INSIGHTS ======= */}
-      <ModuleCard
-        title="Electric Vehicle Insights"
-        icon={<Battery className="h-5 w-5 text-green-600" />}
-        isLoaded={!!moduleData.evInsights}
-        isLoading={loadingModules.has('ev-insights') || loadingAll}
-        onLoad={() => fetchModule('ev-insights')}
-        error={moduleData.evInsights?.success === false ? moduleData.evInsights.error : undefined}
-      >
-        {moduleData.evInsights?.data && <EVInsightsSection data={moduleData.evInsights.data} />}
-      </ModuleCard>
+      {(requestedKeys.length === 0 || requestedKeys.includes('ev-insights')) && (
+        <ModuleCard
+          title="Electric Vehicle Insights"
+          icon={<Battery className="h-5 w-5 text-green-600" />}
+          isLoaded={!!moduleData.evInsights}
+          isLoading={loadingModules.has('ev-insights')}
+          onLoad={() => fetchModule('ev-insights')}
+          error={moduleData.evInsights?.success === false ? moduleData.evInsights.error : undefined}
+        >
+          {moduleData.evInsights?.data && <EVInsightsSection data={moduleData.evInsights.data} />}
+        </ModuleCard>
+      )}
 
       {/* ======= 6. LIFESTYLE FIT ======= */}
-      <ModuleCard
-        title="Lifestyle Fit Tools"
-        icon={<Heart className="h-5 w-5 text-pink-600" />}
-        isLoaded={!!moduleData.lifestyleFit}
-        isLoading={loadingModules.has('lifestyle-fit') || loadingAll}
-        onLoad={() => fetchModule('lifestyle-fit')}
-        error={moduleData.lifestyleFit?.success === false ? moduleData.lifestyleFit.error : undefined}
-      >
-        {moduleData.lifestyleFit?.data && <LifestyleFitSection data={moduleData.lifestyleFit.data} />}
-      </ModuleCard>
+      {(requestedKeys.length === 0 || requestedKeys.includes('lifestyle-fit')) && (
+        <ModuleCard
+          title="Lifestyle Fit Tools"
+          icon={<Heart className="h-5 w-5 text-pink-600" />}
+          isLoaded={!!moduleData.lifestyleFit}
+          isLoading={loadingModules.has('lifestyle-fit')}
+          onLoad={() => fetchModule('lifestyle-fit')}
+          error={moduleData.lifestyleFit?.success === false ? moduleData.lifestyleFit.error : undefined}
+        >
+          {moduleData.lifestyleFit?.data && <LifestyleFitSection data={moduleData.lifestyleFit.data} />}
+        </ModuleCard>
+      )}
 
       {/* ======= 7. PRE-PURCHASE INSPECTIONS ======= */}
-      <ModuleCard
-        title="Pre-Purchase Inspections (Viewing Day)"
-        icon={<Eye className="h-5 w-5 text-indigo-600" />}
-        isLoaded={!!moduleData.prePurchase}
-        isLoading={loadingModules.has('pre-purchase') || loadingAll}
-        onLoad={() => fetchModule('pre-purchase')}
-        error={moduleData.prePurchase?.success === false ? moduleData.prePurchase.error : undefined}
-      >
-        {moduleData.prePurchase?.data && <PrePurchaseSection data={moduleData.prePurchase.data} />}
-      </ModuleCard>
+      {(requestedKeys.length === 0 || requestedKeys.includes('pre-purchase')) && (
+        <ModuleCard
+          title="Pre-Purchase Inspections (Viewing Day)"
+          icon={<Eye className="h-5 w-5 text-indigo-600" />}
+          isLoaded={!!moduleData.prePurchase}
+          isLoading={loadingModules.has('pre-purchase')}
+          onLoad={() => fetchModule('pre-purchase')}
+          error={moduleData.prePurchase?.success === false ? moduleData.prePurchase.error : undefined}
+        >
+          {moduleData.prePurchase?.data && <PrePurchaseSection data={moduleData.prePurchase.data} />}
+        </ModuleCard>
+      )}
     </div>
   );
 }
@@ -662,9 +595,9 @@ function ModuleCard({
             </Button>
           )}
           {error && !isLoading && (
-             <Button variant="outline" size="sm" onClick={onLoad} className="text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700">
-               Load Again
-             </Button>
+            <Button variant="outline" size="sm" onClick={onLoad} className="text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700">
+              Load Again
+            </Button>
           )}
           {isLoading && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">

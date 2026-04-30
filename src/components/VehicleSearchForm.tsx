@@ -13,9 +13,14 @@ interface VehicleSearchFormProps {
 }
 
 export function VehicleSearchForm({ onSearch, className = "" }: VehicleSearchFormProps) {
-  const [registration, setRegistration] = useState("");
+  const [registration, setRegistration] = useState(() => {
+    return sessionStorage.getItem("ruut_registration") || "";
+  });
   const [isLoading, setIsLoading] = useState(false);
-  const [vehicleData, setVehicleData] = useState<SnapshotBaseResponse | null>(null);
+  const [vehicleData, setVehicleData] = useState<SnapshotBaseResponse | null>(() => {
+    const saved = sessionStorage.getItem("ruut_snapshotData");
+    return saved ? JSON.parse(saved) : null;
+  });
   const { toast } = useToast();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,6 +48,8 @@ export function VehicleSearchForm({ onSearch, className = "" }: VehicleSearchFor
 
       if (response.success && response.data) {
         setVehicleData(response.data);
+        sessionStorage.setItem("ruut_registration", cleanedReg);
+        sessionStorage.setItem("ruut_snapshotData", JSON.stringify(response.data));
         onSearch?.(cleanedReg, response.data);
 
         toast({

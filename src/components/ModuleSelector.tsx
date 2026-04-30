@@ -223,10 +223,22 @@ interface ModuleSelectorProps {
 
 export function ModuleSelector({ registration, snapshotData }: ModuleSelectorProps) {
   const navigate = useNavigate();
-  const [selectedModules, setSelectedModules] = useState<Set<string>>(new Set(["snapshot"]));
+  const [selectedModules, setSelectedModules] = useState<Set<string>>(() => {
+    const saved = sessionStorage.getItem("ruut_selectedModules");
+    if (saved) {
+      try {
+        return new Set(JSON.parse(saved));
+      } catch (e) {
+        return new Set(["snapshot"]);
+      }
+    }
+    return new Set(["snapshot"]);
+  });
   const [showPostcodeModal, setShowPostcodeModal] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
-  const [postcode, setPostcode] = useState("");
+  const [postcode, setPostcode] = useState(() => {
+    return sessionStorage.getItem("ruut_postcode") || "";
+  });
 
   const toggleModule = (moduleId: string) => {
     const newSelected = new Set(selectedModules);
@@ -237,6 +249,7 @@ export function ModuleSelector({ registration, snapshotData }: ModuleSelectorPro
       newSelected.add(moduleId);
     }
     setSelectedModules(newSelected);
+    sessionStorage.setItem("ruut_selectedModules", JSON.stringify(Array.from(newSelected)));
   };
 
   const calculateTotal = () => {
@@ -262,6 +275,7 @@ export function ModuleSelector({ registration, snapshotData }: ModuleSelectorPro
 
   const handlePostcodeSubmit = (pc: string) => {
     setPostcode(pc);
+    sessionStorage.setItem("ruut_postcode", pc);
     setShowPostcodeModal(false);
     startLoading();
   };
