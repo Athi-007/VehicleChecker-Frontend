@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Car, AlertCircle, CheckCircle } from "lucide-react";
+import { Search, Car, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { vehicleService, SnapshotBaseResponse } from '@/services/api';
 
@@ -123,38 +123,75 @@ export function VehicleSearchForm({ onSearch, className = "" }: VehicleSearchFor
         </CardContent>
       </Card>
 
-      {/* Compact vehicle summary card */}
+      {/* Vehicle Details card */}
       {info && (
-        <Card className="shadow-md border-primary/20 bg-primary/5 animate-in fade-in-0 slide-in-from-top-2 duration-300">
-          <CardContent className="py-4">
-            <div className="flex items-center gap-3 mb-3">
-              <CheckCircle className="h-5 w-5 text-green-600 shrink-0" />
-              <h3 className="font-semibold text-foreground">Vehicle Found</h3>
-              <Badge className="bg-primary/10 text-primary border border-primary/20 font-mono ml-auto">
+        <Card className="shadow-lg border-0 bg-white animate-in fade-in-0 slide-in-from-top-2 duration-300">
+          <CardContent className="p-6">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-foreground">Vehicle Details</h3>
+              <Badge className="bg-slate-100 text-slate-700 border border-slate-200 font-mono text-sm px-3 py-1">
                 {info.registration}
               </Badge>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-              <div>
-                <p className="text-xs text-muted-foreground">Make & Model</p>
-                <p className="font-semibold">{info.make} {info.model}</p>
+            {/* Details Grid */}
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm">
+              {/* Row 1 */}
+              <div className="flex justify-between items-baseline">
+                <span className="text-muted-foreground">Make:</span>
+                <span className="font-semibold text-foreground">{info.make}</span>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Year</p>
-                <p className="font-semibold">{info.year}</p>
+              <div className="flex justify-between items-baseline">
+                <span className="text-muted-foreground">Colour:</span>
+                <span className="font-semibold text-foreground">{info.color}</span>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Colour</p>
-                <p className="font-semibold">{info.color}</p>
+
+              {/* Row 2 */}
+              <div className="flex justify-between items-baseline">
+                <span className="text-muted-foreground">Model:</span>
+                <span className="font-semibold text-foreground">{info.model}</span>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Mileage</p>
-                <p className="font-semibold">{info.mileage?.toLocaleString() ?? 'N/A'} miles</p>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Tax Status:</span>
+                <Badge className={`text-xs px-2 py-0.5 ${
+                  vehicleData?.tax_status?.tax_status === 'Valid'
+                    ? 'bg-green-100 text-green-700 border border-green-200'
+                    : 'bg-red-100 text-red-700 border border-red-200'
+                }`}>
+                  {vehicleData?.tax_status?.tax_status === 'Valid' ? 'Taxed' : vehicleData?.tax_status?.tax_status || 'N/A'}
+                </Badge>
+              </div>
+
+              {/* Row 3 */}
+              <div className="flex justify-between items-baseline">
+                <span className="text-muted-foreground">Year:</span>
+                <span className="font-semibold text-foreground">{info.year}</span>
+              </div>
+              <div className="flex justify-between items-baseline">
+                <span className="text-muted-foreground">MOT Expiry:</span>
+                <span className="font-semibold text-foreground">{vehicleData?.mot_history?.valid_until || 'N/A'}</span>
+              </div>
+
+              {/* Row 4 */}
+              <div className="flex justify-between items-baseline">
+                <span className="text-muted-foreground">Mileage:</span>
+                <span className="font-semibold text-foreground">{info.mileage?.toLocaleString() ?? 'N/A'} mi</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">MOT Status:</span>
+                <Badge className={`text-xs px-2 py-0.5 ${
+                  vehicleData?.mot_history?.current_status === 'PASSED'
+                    ? 'bg-green-100 text-green-700 border border-green-200'
+                    : 'bg-red-100 text-red-700 border border-red-200'
+                }`}>
+                  {vehicleData?.mot_history?.current_status || 'N/A'}
+                </Badge>
               </div>
             </div>
 
-            <p className="text-sm text-muted-foreground mt-4 pt-3 border-t border-primary/10">
+            {/* Divider + CTA */}
+            <p className="text-sm text-muted-foreground mt-5 pt-4 border-t border-slate-100">
               Select the sections you'd like included in your report below, then click <strong>'Generate Report'</strong> to proceed.
             </p>
           </CardContent>
