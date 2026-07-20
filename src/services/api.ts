@@ -22,6 +22,7 @@ export interface SnapshotBaseResponse {
     year: number;
     color: string;
     mileage: number;
+    fuel_type?: string; // Optional — present if returned by API
   };
   mot_history: {
     current_status: string;
@@ -243,7 +244,32 @@ export interface ProvenanceResponse {
 
 // --- /ev-insights response ---
 export interface EVInsightsResponse {
-  ev: any | null;
+  // The API returns data directly (no wrapper). These fields are present for EV vehicles.
+  battery_health?: {
+    percentage: number;
+    ai_insight: string;
+  };
+  current_range?: {
+    original_mile_range: number;
+    current_mile_range: number;
+    range_loss: number;
+    ai_insight: string;
+  };
+  charging_costs?: {
+    home_cost_per_mile: number;
+    public_cost_per_mile: number;
+    average_cost_per_mile: number;
+    ai_insight: string;
+  };
+  carbon_footprint?: {
+    manufacturing_co2_tonnes: number;
+    driving_co2_tonnes: number;
+    total_lifetime_co2_tonnes: number;
+    saved_vs_petrol_tonnes: number;
+    ai_insight: string;
+  };
+  // Legacy shape — kept for backwards compatibility
+  ev?: any | null;
   reason?: string;
 }
 

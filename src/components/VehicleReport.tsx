@@ -281,11 +281,32 @@ export function VehicleReport({ registration, snapshotData, selectedModules = []
               </table>
             </div>
 
-            {/* Mileage chart replacement logic */}
+            {/* Mileage chart — line chart */}
             {mot?.mileage_progression && mot.mileage_progression.length > 0 && (() => {
-              const maxMil = Math.max(...mot.mileage_progression.map((m: any) => m[1] as number));
+              const points = mot.mileage_progression as Array<[string, number]>;
+              const maxMil = Math.max(...points.map(p => p[1]));
               const chartMax = maxMil > 0 ? Math.ceil(maxMil / 10000) * 10000 : 50000;
-              const CHART_HEIGHT = 180; // px — fixed height for reliable bar rendering
+              const SVG_W = 700;
+              const SVG_H = 180;
+              const PAD_L = 48;
+              const PAD_R = 16;
+              const PAD_T = 16;
+              const PAD_B = 24;
+              const plotW = SVG_W - PAD_L - PAD_R;
+              const plotH = SVG_H - PAD_T - PAD_B;
+              const n = points.length;
+
+              const xPos = (i: number) => PAD_L + (n > 1 ? (i / (n - 1)) * plotW : plotW / 2);
+              const yPos = (mil: number) => PAD_T + plotH - (mil / chartMax) * plotH;
+
+              const polylinePoints = points.map((p, i) => `${xPos(i)},${yPos(p[1])}`).join(' ');
+              const areaPoints = [
+                `${xPos(0)},${PAD_T + plotH}`,
+                ...points.map((p, i) => `${xPos(i)},${yPos(p[1])}`),
+                `${xPos(n - 1)},${PAD_T + plotH}`,
+              ].join(' ');
+
+              const yLabels = [chartMax, chartMax * 0.75, chartMax * 0.5, chartMax * 0.25, 0];
 
               return (
                 <div className="mt-6 p-4 bg-muted/30 rounded-lg border">
@@ -294,46 +315,91 @@ export function VehicleReport({ registration, snapshotData, selectedModules = []
                     <span className="text-xs text-muted-foreground">Annual average: {mot.average_annual_mileage?.toLocaleString() || 0} mi/yr</span>
                   </h5>
 
-                  {/* Chart area */}
-                  <div className="flex" style={{ height: CHART_HEIGHT + 28 }}>
-                    {/* Y-axis labels */}
-                    <div className="flex flex-col justify-between text-[10px] sm:text-xs text-muted-foreground pr-2 items-end shrink-0" style={{ height: CHART_HEIGHT }}>
-                      <span>{Math.round(chartMax / 1000)}k</span>
-                      <span>{Math.round(chartMax * 0.8 / 1000)}k</span>
-                      <span>{Math.round(chartMax * 0.6 / 1000)}k</span>
-                      <span>{Math.round(chartMax * 0.4 / 1000)}k</span>
-                      <span>{Math.round(chartMax * 0.2 / 1000)}k</span>
-                      <span>0</span>
-                    </div>
+                  <div className="w-full overflow-x-auto">
+                    <svg
+                      viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+                      className="w-full"
+                      style={{ minWidth: 280, height: SVG_H }}
+                      aria-label="Mileage progression line chart"
+                    >
+                      <defs>
+                        <linearGradient id="milGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.25" />
+                          <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.02" />
+                        </linearGradient>
+                      </defs>
 
-                    {/* Bars container */}
-                    <div className="flex-1 flex items-end gap-2 sm:gap-3 border-l-2 border-b-2 border-muted-foreground/20 pl-2">
-                      {mot.mileage_progression.map((point: any, idx: number) => {
-                        const dateStr = point[0];
-                        const year = dateStr ? new Date(dateStr).getFullYear() : 'Unknown';
-                        const mileage = point[1] as number;
-                        const barHeight = Math.max((mileage / chartMax) * CHART_HEIGHT, 3);
+                      {/* Horizontal grid lines */}
+                      {yLabels.slice(0, -1).map((val, i) => (
+                        <line
+                          key={i}
+                          x1={PAD_L} y1={yPos(val)}
+                          x2={SVG_W - PAD_R} y2={yPos(val)}
+                          stroke="currentColor" strokeOpacity="0.1" strokeWidth="1"
+                        />
+                      ))}
 
+                      {/* Y-axis labels */}
+                      {yLabels.map((val, i) => (
+                        <text
+                          key={i}
+                          x={PAD_L - 6} y={yPos(val) + 4}
+                          textAnchor="end" fontSize="10"
+                          fill="currentColor" fillOpacity="0.5"
+                        >
+                          {Math.round(val / 1000)}k
+                        </text>
+                      ))}
+
+                      {/* Area fill */}
+                      <polygon points={areaPoints} fill="url(#milGrad)" />
+
+                      {/* Line */}
+                      <polyline
+                        points={polylinePoints}
+                        fill="none"
+                        stroke="#3b82f6"
+                        strokeWidth="2.5"
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                      />
+
+                      {/* Data points + X labels */}
+                      {points.map((p, i) => {
+                        const x = xPos(i);
+                        const y = yPos(p[1]);
+                        const year = p[0] ? new Date(p[0]).getFullYear() : '?';
+                        const isLast = i === n - 1;
                         return (
-                          <div key={idx} className="flex-1 flex flex-col items-center group">
-                            {/* Bar wrapper — fixed to chart height, bar grows from bottom */}
-                            <div className="w-full flex flex-col justify-end items-center relative" style={{ height: CHART_HEIGHT }}>
-                              {/* Hover tooltip */}
-                              <div className="absolute top-0 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-[10px] px-2 py-1 rounded pointer-events-none whitespace-nowrap z-10">
-                                {mileage.toLocaleString()} mi
-                              </div>
-                              {/* The bar */}
-                              <div
-                                className="w-full max-w-[40px] bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all duration-500 group-hover:from-blue-700 group-hover:to-blue-500"
-                                style={{ height: barHeight }}
-                              ></div>
-                            </div>
-                            {/* X-axis label */}
-                            <span className="text-[10px] sm:text-xs mt-2 font-medium truncate w-full text-center">{year}</span>
-                          </div>
+                          <g key={i}>
+                            {/* Outer ring */}
+                            <circle cx={x} cy={y} r="5" fill={isLast ? '#22c55e' : '#3b82f6'} fillOpacity="0.25" />
+                            {/* Inner dot */}
+                            <circle cx={x} cy={y} r="3" fill={isLast ? '#22c55e' : '#3b82f6'} />
+                            {/* Mileage label above dot */}
+                            <text
+                              x={x} y={y - 8}
+                              textAnchor="middle" fontSize="9"
+                              fill="currentColor" fillOpacity="0.65"
+                            >
+                              {(p[1] / 1000).toFixed(0)}k
+                            </text>
+                            {/* X-axis year label */}
+                            <text
+                              x={x} y={SVG_H - 4}
+                              textAnchor="middle" fontSize="10"
+                              fill="currentColor" fillOpacity="0.6"
+                            >
+                              {year}
+                            </text>
+                          </g>
                         );
                       })}
-                    </div>
+
+                      {/* Axes */}
+                      <line x1={PAD_L} y1={PAD_T} x2={PAD_L} y2={PAD_T + plotH} stroke="currentColor" strokeOpacity="0.2" strokeWidth="1.5" />
+                      <line x1={PAD_L} y1={PAD_T + plotH} x2={SVG_W - PAD_R} y2={PAD_T + plotH} stroke="currentColor" strokeOpacity="0.2" strokeWidth="1.5" />
+                    </svg>
                   </div>
 
                   <div className="mt-4 grid grid-cols-2 gap-4 text-xs">
@@ -349,6 +415,7 @@ export function VehicleReport({ registration, snapshotData, selectedModules = []
                 </div>
               );
             })()}
+
           </div>
 
           {/* Rarity */}
@@ -1307,7 +1374,18 @@ function SafetyAssessmentSection({ data }: { data: any }) {
 // EV Insights Section
 // ============================================================
 function EVInsightsSection({ data }: { data: EVInsightsResponse }) {
-  if (!data.ev) {
+  // The API returns data directly — battery_health, current_range etc. are top-level.
+  // Detect if this is genuinely a non-EV response (legacy `ev: null` shape) or a
+  // real EV response (direct fields present).
+  const hasRealData = !!(
+    data.battery_health ||
+    data.current_range ||
+    data.charging_costs ||
+    data.carbon_footprint
+  );
+
+  // If neither shape has data → not applicable
+  if (!hasRealData && !data.ev) {
     return (
       <div className="bg-muted/20 rounded-lg p-6 border border-dashed border-muted-foreground/30 opacity-50">
         <div className="flex flex-col items-center justify-center text-center gap-3 py-4">
@@ -1325,10 +1403,149 @@ function EVInsightsSection({ data }: { data: EVInsightsResponse }) {
       </div>
     );
   }
+
+  const bh = data.battery_health;
+  const cr = data.current_range;
+  const cc = data.charging_costs;
+  const cf = data.carbon_footprint;
+
   return (
-    <pre className="bg-muted p-4 rounded-lg overflow-auto text-xs">
-      {JSON.stringify(data.ev, null, 2)}
-    </pre>
+    <div className="space-y-5">
+      {/* Section Header */}
+      <div className="flex items-center gap-3 pb-2 border-b border-border/50">
+        <div className="p-2 bg-green-100 rounded-lg">
+          <Battery className="h-5 w-5 text-green-600" />
+        </div>
+        <div>
+          <h4 className="text-base font-bold text-foreground">Battery Health Analysis</h4>
+          <p className="text-xs text-muted-foreground">Based on DVSA MOT mileage records and manufacturer data</p>
+        </div>
+      </div>
+
+      {/* Top 3 metric cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        {/* Battery Health */}
+        {bh && (
+          <div className="bg-card border border-border rounded-xl p-5 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <Battery className="h-4 w-4 text-green-500" />
+              Battery Health
+            </div>
+            <div>
+              <span className="text-5xl font-extrabold text-green-600">{bh.percentage}%</span>
+            </div>
+            <p className="text-xs text-muted-foreground">Estimated remaining capacity</p>
+            <div className="w-full bg-muted rounded-full h-2.5">
+              <div
+                className="h-2.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-400"
+                style={{ width: `${bh.percentage}%` }}
+              />
+            </div>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <p className="text-[11px] text-green-800 leading-relaxed">
+                <span className="font-bold">⚡ AI Insight:</span> {bh.ai_insight.replace(/^AI\s*(Positive|Note|Insight)?:?\s*/i, '')}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Current Range */}
+        {cr && (
+          <div className="bg-card border border-border rounded-xl p-5 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <TrendingUp className="h-4 w-4 text-blue-500" />
+              Current Range
+            </div>
+            <div>
+              <span className="text-5xl font-extrabold text-blue-600">{cr.current_mile_range}</span>
+              <span className="text-xl font-bold text-blue-500 ml-1">mi</span>
+            </div>
+            <p className="text-xs text-muted-foreground">Estimated real-world range</p>
+            <div className="space-y-1.5 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Original Range:</span>
+                <span className="font-semibold">{cr.original_mile_range} miles</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Range Loss:</span>
+                <span className="font-semibold text-red-500">-{cr.range_loss} miles</span>
+              </div>
+            </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-[11px] text-blue-800 leading-relaxed">
+                <span className="font-bold">⚡ AI Insight:</span> {cr.ai_insight.replace(/^AI\s*(Note|Positive|Insight)?:?\s*/i, '')}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Charging Costs */}
+        {cc && (
+          <div className="bg-card border border-border rounded-xl p-5 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <Calculator className="h-4 w-4 text-amber-500" />
+              Charging Costs
+            </div>
+            <div>
+              <span className="text-4xl font-extrabold text-amber-600">£{cc.average_cost_per_mile.toFixed(2)}</span>
+              <span className="text-sm font-semibold text-amber-500">/mi</span>
+            </div>
+            <p className="text-xs text-muted-foreground">Average cost per mile</p>
+            <div className="space-y-1.5 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Home Charging (7kW):</span>
+                <span className="font-semibold">£{cc.home_cost_per_mile.toFixed(2)}/mi</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Public DC Fast:</span>
+                <span className="font-semibold">£{cc.public_cost_per_mile.toFixed(2)}/mi</span>
+              </div>
+            </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-[11px] text-amber-800 leading-relaxed">
+                <span className="font-bold">⚡ AI Insight:</span> {cc.ai_insight.replace(/^AI\s*(Note|Positive|Insight)?:?\s*/i, '')}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Carbon Footprint — full-width green row */}
+      {cf && (
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <h5 className="text-sm font-bold text-green-900">Lifetime Carbon Footprint</h5>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div>
+              <p className="text-2xl font-extrabold text-green-700">{cf.manufacturing_co2_tonnes} tonnes</p>
+              <p className="text-xs text-green-600 mt-0.5">Manufacturing CO₂</p>
+            </div>
+            <div>
+              <p className="text-2xl font-extrabold text-green-700">{cf.driving_co2_tonnes} tonnes</p>
+              <p className="text-xs text-green-600 mt-0.5">Driving CO₂ (to date)</p>
+            </div>
+            <div>
+              <p className="text-2xl font-extrabold text-green-700">{cf.total_lifetime_co2_tonnes} tonnes</p>
+              <p className="text-xs text-green-600 mt-0.5">Total Lifetime</p>
+            </div>
+            <div>
+              <p className={`text-2xl font-extrabold ${cf.saved_vs_petrol_tonnes < 0 ? 'text-green-700' : 'text-amber-600'}`}>
+                {cf.saved_vs_petrol_tonnes > 0 ? '+' : ''}{cf.saved_vs_petrol_tonnes} tonnes
+              </p>
+              <p className="text-xs text-green-600 mt-0.5">Saved vs Petrol Equivalent</p>
+            </div>
+          </div>
+          <div className="bg-white border border-green-200 rounded-lg p-3">
+            <p className="text-[11px] text-green-800 leading-relaxed">
+              <span className="font-bold">🌱 AI Insight:</span> {cf.ai_insight.replace(/^AI\s*(Note|Positive|Insight)?:?\s*/i, '')}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

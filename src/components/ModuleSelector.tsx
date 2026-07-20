@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { PostcodeModal } from "@/components/PostcodeModal";
 import { ReportLoadingScreen } from "@/components/ReportLoadingScreen";
+import { GenerateReportDialog } from "@/components/GenerateReportDialog";
 import { SnapshotBaseResponse } from "@/services/api";
 
 interface Module {
@@ -221,11 +222,96 @@ interface ModuleSelectorProps {
   snapshotData?: SnapshotBaseResponse | null;
 }
 
+// ── EV Detection ──────────────────────────────────────────────────────────────
+// Strategy (checked in order, stops at first match):
+//  1. fuel_type field   — explicit from API, most reliable
+//  2. AI analysis text  — API's own AI labels EVs as "electric" in summaries/strengths
+//  3. Make/model prefix — brand-specific EV naming patterns (Mercedes EQ*, BMW i*, etc.)
+//  4. Model keyword list — general EV model names across all makes
+
+/** Makes where EVERY vehicle is electric */
+const EV_ONLY_MAKES = ['tesla'];
+
+/**
+ * Make-specific EV model prefixes.
+ * e.g. Mercedes EQC / EQA / EQB / EQE / EQS all start with "eq"
+ */
+const EV_MAKE_PREFIXES: Record<string, string[]> = {
+  'mercedes-benz': ['eq'],   // EQA, EQB, EQC, EQE, EQS, EQT, EQV
+  'bmw':           ['i'],    // i3, i4, i5, i7, iX, iX1, iX2, iX3
+  'audi':          ['e-tron'],
+  'volkswagen':    ['id.'],  // ID.3, ID.4, ID.5, ID.7
+  'hyundai':       ['ioniq'],
+  'kia':           ['ev'],   // EV6, EV9
+  'volvo':         ['c40', 'ex30', 'ex40', 'ex90', 'ec40'],
+  'polestar':      [''],     // all polestar models are EV
+  'rivian':        [''],
+};
+
+/** Broad keyword list for model names that always indicate EV */
+const EV_MODEL_KEYWORDS = [
+  'electric', ' ev ', 'bev',
+  'leaf', 'zoe', 'e-tron', 'e-golf', 'e-up', 'e-208', 'e-2008',
+  'ioniq', 'kona electric',
+  'model s', 'model 3', 'model x', 'model y',
+  'id.3', 'id.4', 'id.5', 'id.7',
+  'zs ev', 'mg4', 'mg5',
+  'taycan', 'ariya',
+  'r5 e-tech', 'megane e-tech',
+  'bolt ev', 'equinox ev', 'lyriq',
+  'mustang mach-e', 'f-150 lightning',
+  'hummer ev',
+  'spring electric',
+  'ora', 'byd',            // BYD Atto 3, Seal, etc. — all EV
+];
+
+/** Words that confirm "electric vehicle" in free text (AI analysis fields) */
+const EV_TEXT_SIGNALS = ['electric suv', 'electric car', 'electric vehicle', 'fully electric', 'battery electric', 'zero emission', 'bev'];
+
+function detectIsEV(data: SnapshotBaseResponse | null | undefined): boolean {
+  if (!data) return false;
+  const { fuel_type, make, model } = data.vehicle_info;
+
+  // ── Tier 1: explicit fuel_type ──
+  if (fuel_type) {
+    const ft = fuel_type.toLowerCase();
+    if (ft.includes('electric') || ft === 'ev' || ft === 'bev') return true;
+  }
+
+  // ── Tier 2: AI analysis text ──
+  // The API's own AI writes "electric SUV", "electric vehicle" etc. in summaries/strengths
+  const aiSummary = (data.ai_analysis?.market_position?.summary || '').toLowerCase();
+  const aiStrengths = (data.ai_analysis?.market_position?.strengths || []).join(' ').toLowerCase();
+  const aiText = `${aiSummary} ${aiStrengths}`;
+  if (EV_TEXT_SIGNALS.some(sig => aiText.includes(sig))) return true;
+
+  // ── Tier 3: brand-specific EV model prefixes ──
+  const makeLower = (make || '').toLowerCase();
+  const modelLower = (model || '').toLowerCase();
+
+  if (EV_ONLY_MAKES.includes(makeLower)) return true;
+
+  const prefixes = EV_MAKE_PREFIXES[makeLower];
+  if (prefixes) {
+    if (prefixes.includes('')) return true; // whole make is EV (Polestar, Rivian)
+    if (prefixes.some(p => modelLower.startsWith(p))) return true;
+  }
+
+  // ── Tier 4: general model keyword list ──
+  if (EV_MODEL_KEYWORDS.some(kw => modelLower.includes(kw))) return true;
+
+  return false;
+}
+
 export function ModuleSelector({ registration, snapshotData }: ModuleSelectorProps) {
   const navigate = useNavigate();
+  const isEV = detectIsEV(snapshotData);
+
+  // Build visible module list — hide EV module for non-EV vehicles
+  const visibleModules = modules.filter(m => m.id !== 'electric' || isEV);
+
   const [selectedModules, setSelectedModules] = useState<Set<string>>(new Set(["snapshot"]));
-  const [showPostcodeModal, setShowPostcodeModal] = useState(false);
-  const [showLoading, setShowLoading] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
   const [postcode, setPostcode] = useState("");
 
   const toggleModule = (moduleId: string) => {
@@ -247,41 +333,20 @@ export function ModuleSelector({ registration, snapshotData }: ModuleSelectorPro
   };
 
   const handleGenerateReport = () => {
-    // Check if any selected module needs a postcode
-    const needsPostcode = Array.from(selectedModules).some(id => {
-      const mod = modules.find(m => m.id === id);
-      return mod?.needsPostcode;
-    });
-
-    if (needsPostcode && !postcode) {
-      setShowPostcodeModal(true);
-    } else {
-      startLoading();
-    }
+    setShowDialog(true);
   };
 
-  const handlePostcodeSubmit = (pc: string) => {
+  const handleDialogComplete = (pc: string) => {
     setPostcode(pc);
-    setShowPostcodeModal(false);
-    startLoading();
-  };
-
-  const startLoading = () => {
-    setShowLoading(true);
-  };
-
-  const handleLoadingComplete = () => {
+    setShowDialog(false);
     if (registration && snapshotData) {
       navigate(`/report/${registration}`, {
         state: {
           snapshotData,
           selectedModules: Array.from(selectedModules),
-          postcode,
+          postcode: pc,
         }
       });
-    } else {
-      // No registration yet — just close loading
-      setShowLoading(false);
     }
   };
 
@@ -304,18 +369,17 @@ export function ModuleSelector({ registration, snapshotData }: ModuleSelectorPro
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            {modules.map((module) => {
+            {visibleModules.map((module) => {
               const isSelected = selectedModules.has(module.id);
               const Icon = module.icon;
 
               return (
                 <Card
                   key={module.id}
-                  className={`transition-all duration-300 hover:shadow-lg cursor-pointer ${
-                    isSelected
+                  className={`transition-all duration-300 hover:shadow-lg cursor-pointer ${isSelected
                       ? 'ring-2 ring-primary shadow-md bg-primary/5'
                       : 'hover:shadow-md'
-                  }`}
+                    }`}
                   onClick={() => toggleModule(module.id)}
                 >
                   <CardHeader className="pb-4">
@@ -446,17 +510,11 @@ export function ModuleSelector({ registration, snapshotData }: ModuleSelectorPro
         </div>
       </div>
 
-      {/* Postcode Modal */}
-      <PostcodeModal
-        open={showPostcodeModal}
-        onClose={() => setShowPostcodeModal(false)}
-        onSubmit={handlePostcodeSubmit}
-      />
-
-      {/* Loading Screen */}
-      <ReportLoadingScreen
-        open={showLoading}
-        onComplete={handleLoadingComplete}
+      {/* Generate Report Dialog (postcode + animated loading) */}
+      <GenerateReportDialog
+        open={showDialog}
+        onOpenChange={setShowDialog}
+        onComplete={handleDialogComplete}
       />
     </section>
   );

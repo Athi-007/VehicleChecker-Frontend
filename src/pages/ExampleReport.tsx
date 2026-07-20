@@ -350,63 +350,101 @@ const ExampleReport = () => {
                     </table>
                   </div>
 
-                  {/* Mileage Chart - Enhanced */}
-                  <div className="mt-6 p-4 bg-muted/30 rounded-lg border">
-                    <h5 className="text-sm font-semibold mb-3 flex items-center justify-between">
-                      <span>Mileage Progression Chart</span>
-                      <span className="text-xs text-muted-foreground">Annual average: 9,047 mi/yr</span>
-                    </h5>
-                    <div className="relative h-48 flex items-end justify-between gap-3 border-l-2 border-b-2 border-muted-foreground/20 pl-2 pb-2">
-                      {/* Y-axis labels */}
-                      <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-xs text-muted-foreground -ml-8 pb-8">
-                        <span>50k</span>
-                        <span>40k</span>
-                        <span>30k</span>
-                        <span>20k</span>
-                        <span>10k</span>
-                        <span>0</span>
+                  {/* Mileage Chart - Line Chart */}
+                  {(() => {
+                    const samplePoints = [
+                      ['2020-08-15', 12567],
+                      ['2021-08-20', 21223],
+                      ['2022-08-18', 29445],
+                      ['2023-08-22', 37891],
+                      ['2024-08-24', 45234],
+                    ] as Array<[string, number]>;
+                    const chartMax = 50000;
+                    const SVG_W = 700, SVG_H = 180;
+                    const PAD_L = 48, PAD_R = 16, PAD_T = 16, PAD_B = 24;
+                    const plotW = SVG_W - PAD_L - PAD_R;
+                    const plotH = SVG_H - PAD_T - PAD_B;
+                    const n = samplePoints.length;
+                    const xPos = (i: number) => PAD_L + (i / (n - 1)) * plotW;
+                    const yPos = (mil: number) => PAD_T + plotH - (mil / chartMax) * plotH;
+                    const polylinePoints = samplePoints.map((p, i) => `${xPos(i)},${yPos(p[1])}`).join(' ');
+                    const areaPoints = [
+                      `${xPos(0)},${PAD_T + plotH}`,
+                      ...samplePoints.map((p, i) => `${xPos(i)},${yPos(p[1])}`),
+                      `${xPos(n - 1)},${PAD_T + plotH}`,
+                    ].join(' ');
+                    const yLabels = [50000, 37500, 25000, 12500, 0];
+                    return (
+                      <div className="mt-6 p-4 bg-muted/30 rounded-lg border">
+                        <h5 className="text-sm font-semibold mb-3 flex items-center justify-between">
+                          <span>Mileage Progression Chart</span>
+                          <span className="text-xs text-muted-foreground">Annual average: 9,047 mi/yr</span>
+                        </h5>
+                        <div className="w-full overflow-x-auto">
+                          <svg
+                            viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+                            className="w-full"
+                            style={{ minWidth: 280, height: SVG_H }}
+                            aria-label="Mileage progression line chart"
+                          >
+                            <defs>
+                              <linearGradient id="exMilGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.25" />
+                                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.02" />
+                              </linearGradient>
+                            </defs>
+                            {yLabels.slice(0, -1).map((val, i) => (
+                              <line key={i} x1={PAD_L} y1={yPos(val)} x2={SVG_W - PAD_R} y2={yPos(val)}
+                                stroke="currentColor" strokeOpacity="0.1" strokeWidth="1" />
+                            ))}
+                            {yLabels.map((val, i) => (
+                              <text key={i} x={PAD_L - 6} y={yPos(val) + 4} textAnchor="end" fontSize="10"
+                                fill="currentColor" fillOpacity="0.5">
+                                {val === 0 ? '0' : `${val / 1000}k`}
+                              </text>
+                            ))}
+                            <polygon points={areaPoints} fill="url(#exMilGrad)" />
+                            <polyline points={polylinePoints} fill="none" stroke="#3b82f6"
+                              strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+                            {samplePoints.map((p, i) => {
+                              const x = xPos(i), y = yPos(p[1]);
+                              const year = new Date(p[0]).getFullYear();
+                              const isLast = i === n - 1;
+                              return (
+                                <g key={i}>
+                                  <circle cx={x} cy={y} r="5" fill={isLast ? '#22c55e' : '#3b82f6'} fillOpacity="0.25" />
+                                  <circle cx={x} cy={y} r="3" fill={isLast ? '#22c55e' : '#3b82f6'} />
+                                  <text x={x} y={y - 8} textAnchor="middle" fontSize="9"
+                                    fill="currentColor" fillOpacity="0.65">
+                                    {(p[1] / 1000).toFixed(0)}k
+                                  </text>
+                                  <text x={x} y={SVG_H - 4} textAnchor="middle" fontSize="10"
+                                    fill="currentColor" fillOpacity="0.6">
+                                    {year}
+                                  </text>
+                                </g>
+                              );
+                            })}
+                            <line x1={PAD_L} y1={PAD_T} x2={PAD_L} y2={PAD_T + plotH}
+                              stroke="currentColor" strokeOpacity="0.2" strokeWidth="1.5" />
+                            <line x1={PAD_L} y1={PAD_T + plotH} x2={SVG_W - PAD_R} y2={PAD_T + plotH}
+                              stroke="currentColor" strokeOpacity="0.2" strokeWidth="1.5" />
+                          </svg>
+                        </div>
+                        <div className="mt-4 grid grid-cols-2 gap-4 text-xs">
+                          <div className="bg-background p-2 rounded">
+                            <p className="text-muted-foreground">Estimated current mileage</p>
+                            <p className="font-semibold text-base">~46,800 miles</p>
+                          </div>
+                          <div className="bg-background p-2 rounded">
+                            <p className="text-muted-foreground">Average historical annual mileage</p>
+                            <p className="font-semibold text-base">~9,050 miles/yr</p>
+                          </div>
+                        </div>
                       </div>
+                    );
+                  })()}
 
-                      {/* Bars */}
-                      <div className="flex-1 flex flex-col items-center">
-                        <div className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:from-blue-700 hover:to-blue-500" style={{ height: '26%' }}></div>
-                        <span className="text-xs mt-2 font-medium">Aug 2020</span>
-                        <span className="text-xs text-muted-foreground">12,567</span>
-                      </div>
-                      <div className="flex-1 flex flex-col items-center">
-                        <div className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:from-blue-700 hover:to-blue-500" style={{ height: '46%' }}></div>
-                        <span className="text-xs mt-2 font-medium">Aug 2021</span>
-                        <span className="text-xs text-muted-foreground">21,223</span>
-                      </div>
-                      <div className="flex-1 flex flex-col items-center">
-                        <div className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:from-blue-700 hover:to-blue-500" style={{ height: '64%' }}></div>
-                        <span className="text-xs mt-2 font-medium">Aug 2022</span>
-                        <span className="text-xs text-muted-foreground">29,445</span>
-                      </div>
-                      <div className="flex-1 flex flex-col items-center">
-                        <div className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:from-blue-700 hover:to-blue-500" style={{ height: '83%' }}></div>
-                        <span className="text-xs mt-2 font-medium">Aug 2023</span>
-                        <span className="text-xs text-muted-foreground">37,891</span>
-                      </div>
-                      <div className="flex-1 flex flex-col items-center">
-                        <div className="w-full bg-gradient-to-t from-green-600 to-green-400 rounded-t transition-all hover:from-green-700 hover:to-green-500" style={{ height: '98%' }}></div>
-                        <span className="text-xs mt-2 font-medium">Aug 2024</span>
-                        <span className="text-xs text-muted-foreground font-semibold">45,234</span>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-2 gap-4 text-xs">
-                      <div className="bg-background p-2 rounded">
-                        <p className="text-muted-foreground">Estimated current mileage</p>
-                        <p className="font-semibold text-base">~46,800 miles</p>
-                      </div>
-                      <div className="bg-background p-2 rounded">
-                        <p className="text-muted-foreground">Average historical annual mileage</p>
-                        <p className="font-semibold text-base">~9,050 miles/yr</p>
-                      </div>
-                    </div>
-
-                  </div>
                 </div>
 
                 {/* Consolidated AI Analysis for Essential Overview */}
